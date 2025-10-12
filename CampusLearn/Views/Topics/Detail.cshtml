@@ -1,0 +1,67 @@
+@model CampusLearn.Controllers.TopicsController.Topic
+@{
+    ViewData["Title"] = "Topic Details";
+    var posts = ViewBag.Posts as List<CampusLearn.Controllers.TopicsController.Post>;
+}
+
+<div class="container mt-4">
+    <a asp-action="Index" class="btn btn-link p-0 mb-3">&larr; Back to Topics</a>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success">@TempData["Message"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4 class="card-title">@Model.Title</h4>
+            <div class="text-muted mb-2">
+                <strong>@Model.Author</strong> &middot; @Model.CreatedAt.ToString("g")
+            </div>
+            <p class="card-text">@Model.Content</p>
+        </div>
+    </div>
+
+    <h5 class="mb-3">Replies</h5>
+    @if (posts == null || !posts.Any())
+    {
+        <div class="text-muted">No replies yet.</div>
+    }
+    else
+    {
+        <ul class="list-group mb-4">
+            @foreach (var p in posts)
+            {
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between">
+                        <strong>@p.Author</strong>
+                        <small class="text-muted">@p.CreatedAt.ToString("g")</small>
+                    </div>
+                    <div>@p.Body</div>
+                </li>
+            }
+        </ul>
+    }
+
+    <div class="card">
+        <div class="card-body">
+            <h6 class="card-title">Add Reply</h6>
+            <form asp-action="AddReply" method="post">
+                <input type="hidden" name="topicId" value="@Model.TopicId" />
+                <div class="mb-3">
+                    <label class="form-label">Message</label>
+                    <textarea class="form-control" name="message" rows="3" required></textarea>
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" name="anonymous" id="anonCheck" />
+                    <label class="form-check-label" for="anonCheck">Post as Anonymous</label>
+                </div>
+                <button class="btn btn-primary" type="submit">Reply</button>
+            </form>
+        </div>
+    </div>
+</div>

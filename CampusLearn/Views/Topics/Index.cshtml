@@ -1,0 +1,60 @@
+@model IEnumerable<CampusLearn.Controllers.TopicsController.Topic>
+@{
+    ViewData["Title"] = "Topics";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-3">Topics</h2>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success">@TempData["Message"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Create Topic</h5>
+            <form asp-action="Create" method="post">
+                <div class="mb-3">
+                    <label class="form-label">Title</label>
+                    <input class="form-control" type="text" name="title" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Content</label>
+                    <textarea class="form-control" name="content" rows="4" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Author</label>
+                    <input class="form-control" type="text" name="author" value="Student123" />
+                </div>
+                <button class="btn btn-primary" type="submit">Create Topic</button>
+            </form>
+        </div>
+    </div>
+
+    <h5>Existing Topics</h5>
+    @if (!Model.Any())
+    {
+        <div class="text-muted">No topics yet.</div>
+    }
+    else
+    {
+        <div class="list-group">
+            @foreach (var t in Model)
+            {
+                <a class="list-group-item list-group-item-action" asp-action="Detail" asp-route-id="@t.TopicId">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1">@t.Title</h6>
+                        <small>@t.CreatedAt.ToString("g")</small>
+                    </div>
+                    <small class="text-muted">by @t.Author</small>
+                    <p class="mb-1">@t.Content</p>
+                </a>
+            }
+        </div>
+    }
+</div>
