@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 namespace CampusLearn.Controllers
 {
     public class TopicsController : Controller
@@ -17,13 +17,14 @@ namespace CampusLearn.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(string title, string content, string author)
         {
-            if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(content))
+            if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(content)) //not empty
             {
                 TempData["Error"] = "Title and Content are required.";
                 return RedirectToAction("Index");
             }
+           
 
-            var t = new Topic
+            var t = new Topic //object
             {
                 TopicId = Guid.NewGuid().ToString(),
                 Title = title.Trim(),
@@ -31,6 +32,12 @@ namespace CampusLearn.Controllers
                 Author = string.IsNullOrWhiteSpace(author) ? "Student123" : author.Trim(),
                 CreatedAt = DateTime.Now
             };
+
+            if (Topics.Any(t => t.Title.Trim().ToLower() == title.Trim().ToLower())) //checks if there is a topic with the same title, reduces redundancy 
+            {
+                TempData["Error"] = "There is a topic that has the same Topic Title";
+                return RedirectToAction("Index");
+            }
             Topics.Add(t);
             TempData["Message"] = "Topic created successfully.";
             return RedirectToAction("Index");
@@ -90,5 +97,6 @@ namespace CampusLearn.Controllers
             public string Author { get; set; } = "";
             public DateTime CreatedAt { get; set; }
         }
+
     }
 }
