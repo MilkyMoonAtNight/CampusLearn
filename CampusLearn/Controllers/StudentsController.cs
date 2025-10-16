@@ -17,15 +17,15 @@ namespace CampusLearn.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Student>>> GetStudents()
+        public async Task<ActionResult<IEnumerable<Student>>> GetStudent()
         {
-            return await _context.Students.ToListAsync();
+            return await _context.student.ToListAsync();
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Student>> GetStudent(long id)
         {
-            var student = await _context.Students.FindAsync(id);
+            var student = await _context.student.FindAsync(id);
             if (student == null)
                 return NotFound();
             return student;

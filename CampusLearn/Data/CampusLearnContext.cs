@@ -8,9 +8,9 @@ namespace CampusLearn.Data
     {
         public CampusLearnContext(DbContextOptions<CampusLearnContext> options) : base(options) { }
 
-        public DbSet<Student> Students { get; set; }
-        public DbSet<Tutors> Tutor { get; set; }
-        public DbSet<TopicMod> Modules { get; set; }
-        
+        public DbSet<Student> student { get; set; }
+        //public DbSet<Tutors> tutor { get; set; }
+        // public DbSet<TopicMod> Modules { get; set; }
+
     }
 }

@@ -4,7 +4,7 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services
+
 builder.Services.AddControllersWithViews(); // For API controllers
 
 builder.Services.AddDbContext<CampusLearnContext>(
@@ -12,7 +12,7 @@ builder.Services.AddDbContext<CampusLearnContext>(
 );
 builder.Services.AddEndpointsApiExplorer();
 
-// Add Swagger with OpenApiInfo
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
@@ -32,7 +32,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "CampusLearn API v1");
-        c.RoutePrefix = ""; // Swagger at root URL (https://localhost:5001/)
+        //c.RoutePrefix = ""; // Swagger at root URL (https://localhost:5001/)
     });
 }
 else

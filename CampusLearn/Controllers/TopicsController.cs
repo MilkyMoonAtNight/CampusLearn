@@ -22,7 +22,7 @@ namespace CampusLearn.Controllers
                 TempData["Error"] = "Title and Content are required.";
                 return RedirectToAction("Index");
             }
-           
+
 
             var t = new Topic //object
             {
