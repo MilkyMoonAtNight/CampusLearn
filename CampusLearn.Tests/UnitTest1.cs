@@ -65,7 +65,5 @@ namespace CampusLearn.Tests
             return field?.GetValue(null) as List<T>;
         }
 
-
-
     }
 }
