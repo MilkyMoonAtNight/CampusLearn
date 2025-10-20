@@ -6,6 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddControllersWithViews(); // For API controllers
+builder.Services.AddSession();
 
 builder.Services.AddDbContext<CampusLearnContext>(
     options => options.UseNpgsql(builder.Configuration.GetConnectionString("CampusLearnDb"))
@@ -45,6 +46,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseSession();
 app.UseAuthorization();
 
 // Map API controllers (needed for Swagger endpoints to work)
@@ -53,8 +55,9 @@ app.MapControllers();
 // Map MVC default route (for views if needed)
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}"
+    pattern: "{controller=LogIn}/{action=Index}/{id?}"
 );
+
 
 app.Run();
 

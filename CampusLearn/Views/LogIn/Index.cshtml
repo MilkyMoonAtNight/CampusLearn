@@ -1,6 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Login";
-    Layout = "~/Views/Shared/_Layout.cshtml"; // Optional: remove if not using layout
+    Layout = "~/Views/Shared/_Layout.cshtml"; 
 }
 
 <style>
@@ -10,7 +10,7 @@
     }
 
     .login-container {
-        max-width: 400px;
+        max-width: 80%;
         margin: 80px auto;
         padding: 40px;
         background-color: white;
@@ -66,15 +66,18 @@
 </style>
 
 <div class="login-container">
-    <div class="login-icon">📘</div>
+    <div class="login-icon"><img src="~/images/campuslearn-removebg-preview.png" /></div>
     <div class="login-title">Welcome to CampusLearn</div>
     <div class="login-subtitle">Sign in to your account</div>
 
-    <form asp-action="Login" method="post">
-        <input type="text" name="Username" placeholder="Username" class="form-control mb-3" required />
-        <input type="password" name="Password" placeholder="Password" class="form-control mb-4" required />
+    <form asp-action="Index" method="post">
+        <input type="text" name="username" placeholder="Username" class="form-control mb-3" required />
+        <input type="password" name="password" placeholder="Password" class="form-control mb-4" required />
         <button type="submit" class="btn-login">Log In</button>
     </form>
-
-    <a href="/Account/Register" class="register-link">Don't have an account? Register</a>
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">@ViewBag.Error</div>
+    }
+    Don't have an account? <a href="/Account/Register" class="register-link">Message Admin.</a>
 </div>

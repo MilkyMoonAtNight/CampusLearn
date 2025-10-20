@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using CampusLearn.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,7 +15,9 @@ namespace CampusLearn.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            var username = HttpContext.Session.GetString("LoggedInUser");
+            var user = UserStore.Users.FirstOrDefault(u => u.Username == username);
+            return View(user); 
         }
 
         public IActionResult Privacy()
