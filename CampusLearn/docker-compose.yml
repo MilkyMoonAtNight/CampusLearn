@@ -1,0 +1,31 @@
+﻿version: '3.9'
+
+services:
+  campuslearn-db:
+    image: postgres:15
+    container_name: campuslearn-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Herman123
+      POSTGRES_DB: campuslearn
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  campuslearn-api:
+    build: .
+    container_name: campuslearn-api
+    restart: always
+    depends_on:
+      - campuslearn-db
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__CampusLearnDb: Host=campuslearn-db;Port=5432;Database=campuslearn;Username=postgres;Password=Herman123
+      Gemini__ApiKey: "AIzaSyDnSQh7QCZbtQdwX4eXVvgVEaJPb7xFPuc"
+    ports:
+      - "5014:8080"
+
+volumes:
+  pgdata:
