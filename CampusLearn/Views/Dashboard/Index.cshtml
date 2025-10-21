@@ -1,0 +1,131 @@
+﻿@model CampusLearn.Controllers.DashboardController.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container mt-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h2 class="mb-0">Dashboard</h2>
+            <div class="text-muted">Welcome back, <strong>@Model.UserName</strong>. Last access: @Model.LastAccess.ToString("f").</div>
+        </div>
+        <a class="btn btn-outline-primary" asp-controller="Topics" asp-action="Index">Go to Topics</a>
+    </div>
+
+    <div class="row">
+        <!-- Announcements -->
+        <div class="col-12 col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Announcements</h5>
+                    @if (!Model.Announcements.Any())
+                    {
+                        <div class="text-muted">No announcements.</div>
+                    }
+                    else
+                    {
+                        <ul class="list-group list-group-flush">
+                            @foreach (var a in Model.Announcements)
+                            {
+                                <li class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <strong>@a.Title</strong>
+                                        <small class="text-muted">@a.CreatedAt.ToString("g")</small>
+                                    </div>
+                                    <div class="text-muted">Module: @a.Module</div>
+                                    <div>@a.Body</div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Tests -->
+        <div class="col-12 col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Upcoming Tests</h5>
+                    @if (!Model.UpcomingTests.Any())
+                    {
+                        <div class="text-muted">No upcoming tests.</div>
+                    }
+                    else
+                    {
+                        <ul class="list-group list-group-flush">
+                            @foreach (var t in Model.UpcomingTests)
+                            {
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <div>
+                                        <strong>@t.Title</strong>
+                                        <div class="text-muted">Module: @t.Module</div>
+                                    </div>
+                                    <div><span class="badge bg-secondary">@t.DueDate.ToString("g")</span></div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Assignments -->
+        <div class="col-12 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Upcoming Assignments</h5>
+                    @if (!Model.UpcomingAssignments.Any())
+                    {
+                        <div class="text-muted">No upcoming assignments.</div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Module</th>
+                                        <th>Due</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var a in Model.UpcomingAssignments)
+                                    {
+                                        <tr>
+                                            <td>@a.Title</td>
+                                            <td>@a.Module</td>
+                                            <td>@a.DueDate.ToString("d")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Quick Links</h5>
+            @if (!Model.QuickLinks.Any())
+            {
+                <div class="text-muted">No quick links configured.</div>
+            }
+            else
+            {
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var q in Model.QuickLinks)
+                    {
+                        <a class="btn btn-outline-secondary" asp-controller="@q.Controller" asp-action="@q.Action">@q.Label</a>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
