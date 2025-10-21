@@ -1,83 +1,185 @@
 ﻿@{
     ViewData["Title"] = "Login";
-    Layout = "~/Views/Shared/_Layout.cshtml"; 
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <style>
-    body {
-        background-color: #f9f9f9;
-        font-family: 'Segoe UI', sans-serif;
+    :root{
+        --primary: #6a0dad;
+        --primary-600: #5a0099;
+        --muted: #6b7280;
+        --card-bg: rgba(255,255,255,0.82);
+        --glass-blur: 8px;
+        --max-width: 420px;
     }
 
-    .login-container {
-        max-width: 80%;
-        margin: 80px auto;
-        padding: 40px;
-        background-color: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    /* Page background */
+    .login-page {
+        min-height: calc(100vh - 80px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 48px 20px;
+        background: radial-gradient(800px 400px at 10% 10%, rgba(106,13,173,0.06), transparent),
+                    radial-gradient(700px 350px at 90% 90%, rgba(0,122,255,0.04), transparent),
+                    linear-gradient(180deg, #fbfbff 0%, #f6f8ff 100%);
+        font-family: 'Segoe UI', system-ui, -apple-system, "Helvetica Neue", Arial;
+    }
+
+    /* Card */
+    .login-card {
+        width: 100%;
+        max-width: var(--max-width);
+        background: var(--card-bg);
+        border-radius: 14px;
+        padding: 36px;
+        box-shadow: 0 10px 30px rgba(20, 20, 50, 0.08);
+        backdrop-filter: blur(var(--glass-blur));
+        -webkit-backdrop-filter: blur(var(--glass-blur));
         text-align: center;
     }
 
-    .login-icon {
-        font-size: 48px;
-        color: #6a0dad;
-        margin-bottom: 20px;
+    .brand {
+        width: 76px;
+        height: 76px;
+        margin: 0 auto 14px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, rgba(106,13,173,0.12), rgba(90,0,153,0.06));
+        box-shadow: 0 6px 18px rgba(106,13,173,0.08);
+        overflow: hidden;
+    }
+
+    .brand img {
+        max-width: 64px;
+        max-height: 64px;
+        display: block;
     }
 
     .login-title {
-        font-size: 24px;
-        font-weight: bold;
-        margin-bottom: 10px;
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #111827;
     }
 
     .login-subtitle {
-        font-size: 16px;
-        color: #666;
-        margin-bottom: 30px;
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 22px;
+    }
+
+    /* Form */
+    .login-form {
+        display: grid;
+        gap: 12px;
+        margin-bottom: 8px;
+    }
+
+    .input {
+        height: 48px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #ececf7;
+        background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(250,250,252,0.6));
+        transition: box-shadow 160ms ease, border-color 160ms ease, transform 120ms ease;
+        font-size: 15px;
+        color: #111827;
+        outline: none;
+    }
+
+    .input::placeholder { color: #9aa0a6; }
+
+    .input:focus {
+        border-color: rgba(106,13,173,0.7);
+        box-shadow: 0 6px 20px rgba(106,13,173,0.08);
+        transform: translateY(-1px);
     }
 
     .btn-login {
-        background-color: #6a0dad;
-        color: white;
+        height: 48px;
+        border-radius: 10px;
         border: none;
-        padding: 12px 24px;
-        font-size: 16px;
-        border-radius: 6px;
+        background: linear-gradient(180deg, var(--primary), var(--primary-600));
+        color: #fff;
+        font-weight: 600;
         cursor: pointer;
-        width: 100%;
+        transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+        box-shadow: 0 8px 20px rgba(106,13,173,0.14);
     }
 
     .btn-login:hover {
-        background-color: #5a0099;
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(106,13,173,0.18);
+    }
+
+    .helper-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 6px;
+        font-size: 13px;
+        color: var(--muted);
     }
 
     .register-link {
-        margin-top: 20px;
-        font-size: 14px;
-        color: #6a0dad;
+        color: var(--primary);
         text-decoration: none;
-        display: block;
+        font-weight: 600;
     }
 
     .register-link:hover {
         text-decoration: underline;
     }
+
+    .alert {
+        margin-top: 14px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: #fff6f6;
+        color: #8b1e1e;
+        border: 1px solid #ffd6d6;
+        font-size: 13px;
+    }
+
+    /* Small screens */
+    @@media (max-width: 480px) {
+        .login-card {
+            padding: 22px;
+            border-radius: 12px;
+        }
+
+        .brand { width: 64px; height: 64px; }
+        .login-title { font-size: 18px; }
+    }
 </style>
 
-<div class="login-container">
-    <div class="login-icon"><img src="~/images/campuslearn-removebg-preview.png" /></div>
-    <div class="login-title">Welcome to CampusLearn</div>
-    <div class="login-subtitle">Sign in to your account</div>
+<div class="login-page">
+    <main class="login-card" role="main" aria-labelledby="login-heading">
+        <div class="brand" aria-hidden="true">
+            <img src="~/images/campuslearn-removebg-preview.png" alt="CampusLearn logo" />
+        </div>
 
-    <form asp-action="Index" method="post">
-        <input type="text" name="username" placeholder="Username" class="form-control mb-3" required />
-        <input type="password" name="password" placeholder="Password" class="form-control mb-4" required />
-        <button type="submit" class="btn-login">Log In</button>
-    </form>
-    @if (ViewBag.Error != null)
-    {
-        <div class="alert alert-danger">@ViewBag.Error</div>
-    }
-    Don't have an account? <a href="/Account/Register" class="register-link">Message Admin.</a>
+        <h1 id="login-heading" class="login-title">Welcome to CampusLearn</h1>
+        <p class="login-subtitle">Sign in to your account to continue</p>
+
+        <form asp-action="Index" method="post" class="login-form" novalidate>
+            @Html.AntiForgeryToken()
+            <input class="input" type="text" name="username" placeholder="Username" required autocomplete="username" />
+            <input class="input" type="password" name="password" placeholder="Password" required autocomplete="current-password" />
+            <button type="submit" class="btn-login">Sign in</button>
+        </form>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert" role="alert">@ViewBag.Error</div>
+        }
+
+        <div class="helper-row" aria-hidden="false">
+            <span style="color:var(--muted);">Don't have an account?</span>
+            <a href="/Account/Register" class="register-link">Message Admin</a>
+        </div>
+    </main>
 </div>
