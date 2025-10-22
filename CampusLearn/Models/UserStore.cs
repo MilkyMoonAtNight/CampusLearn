@@ -1,4 +1,6 @@
-﻿using static CampusLearn.Controllers.LogInController;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
+using static CampusLearn.Controllers.LogInController;
 
 namespace CampusLearn.Models
 {
@@ -48,16 +50,42 @@ namespace CampusLearn.Models
 
     public class User
     {
+        [Required(ErrorMessage = "Username is required.")]
+        [StringLength(50, ErrorMessage = "Username cannot exceed 50 characters.")]
         public string Username { get; set; }
+
+        [Required(ErrorMessage = "First name is required.")]
+        [StringLength(50)]
         public string FirstName { get; set; }
+
+        [Required(ErrorMessage = "Middle initial is required.")]
+        [StringLength(1, ErrorMessage = "Middle initial must be a single character.")]
         public string MiddleInitial { get; set; }
+
+        [Required(ErrorMessage = "Last name is required.")]
+        [StringLength(50)]
         public string LastName { get; set; }
+
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Invalid email format.")]
         public string Email { get; set; }
+
+        [Required(ErrorMessage = "Phone number is required.")]
+        [Phone(ErrorMessage = "Invalid phone number.")]
         public string Phone { get; set; }
-        public List<string> Groups { get; set; }
-        public DateTime LastAccess { get; set; }
+
+        public List<string> Groups { get; set; } = new();
+
+        [DataType(DataType.DateTime)]
+        public DateTime LastAccess { get; set; } = DateTime.Now;
+
         public string FullName => $"{FirstName} {MiddleInitial} {LastName}";
+
+        [Required(ErrorMessage = "Password is required.")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters.")]
+        [DataType(DataType.Password)]
         public string Password { get; set; }
+
     }
 
 }

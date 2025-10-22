@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
+using System.ComponentModel.DataAnnotations;
 
 namespace CampusLearn.Models
 {
@@ -8,10 +9,18 @@ namespace CampusLearn.Models
     }
     public class Message
     {
+        [Required(ErrorMessage = "Sender name is required.")]
+        [StringLength(50, ErrorMessage = "Sender name cannot exceed 50 characters.")]
         public string SenderName { get; set; }
+
+        [Required(ErrorMessage = "Message content cannot be empty.")]
+        [StringLength(1000, ErrorMessage = "Message content is too long.")]
         public string Content { get; set; }
-        public DateTime Timestamp { get; set; }
-        public bool IsUser { get; set; } // true if current user, false if other party
+
+        [DataType(DataType.DateTime)]
+        public DateTime Timestamp { get; set; } = DateTime.Now;
+
+        public bool IsUser { get; set; }
     }
 
 }
