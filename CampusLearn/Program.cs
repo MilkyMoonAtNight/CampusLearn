@@ -55,7 +55,12 @@ app.MapControllers();
 // Map MVC default route (for views if needed)
 app.MapControllerRoute(
   name: "default",
-  pattern: "{controller=LogIn}/{action=Index}/{id?}");
+
+  pattern: "{controller=LogIn}/{action=Index}/{id?}"
+  );
+
+  
+
 
 
 

@@ -1,4 +1,4 @@
-﻿@model CampusLearn.Models.Module
+﻿@model CampusLearn.Models.TopicModule
 @{
     ViewData["Title"] = "Module Details";
 }
@@ -42,43 +42,25 @@
 </style>
 
 <div class="module-details">
-    <h2>@Model.Title</h2>
-    <p><strong>Instructor:</strong> @Model.Instructor</p>
-    <p><strong>Weeks Remaining:</strong> @Model.WeeksRemaining</p>
-    <p><strong>Completion:</strong> @Model.Completion%</p>
+    <h2>@Model.ModuleName</h2>
+    <p><strong>Cluster:</strong> @Model.ModuleCluster?.ClusterName ?? "N/A"</p>
+    <p><strong>Instructor:</strong> @Model.ModuleHead?.TutorName ?? "TBA"</p>
 
     <div class="section">
-        <h3>Weekly Content</h3>
-        @foreach (var week in Model.WeeklyContent)
+        <h3>📚 Resources</h3>
+        @if (Model.ModuleResources != null && Model.ModuleResources.Any())
         {
-            <div class="card">
-                <div class="card-title">Week @week.WeekNumber: @week.Topic</div>
-                <div class="card-sub">@week.Description</div>
-            </div>
+            @foreach (var res in Model.ModuleResources)
+            {
+                <div class="card">
+                    <div class="card-title">@res.ResourceType</div>
+                    <a href="@res.ResourceURL" target="_blank">@res.ResourceURL</a>
+                </div>
+            }
         }
-    </div>
-
-    <div class="section">
-        <h3>Announcements</h3>
-        @foreach (var note in Model.Announcements)
+        else
         {
-            <div class="card">
-                <div class="card-title">@note.Title</div>
-                <div class="card-sub">@note.PostedAt.ToShortDateString()</div>
-                <p>@note.Message</p>
-            </div>
-        }
-    </div>
-
-    <div class="section">
-        <h3>📝 Assignments</h3>
-        @foreach (var task in Model.Assignments)
-        {
-            <div class="card">
-                <div class="card-title">@task.Title</div>
-                <div class="card-sub">Due: @task.DueDate.ToShortDateString()</div>
-                <p>@task.Instructions</p>
-            </div>
+            <p>No module resources available.</p>
         }
     </div>
 </div>

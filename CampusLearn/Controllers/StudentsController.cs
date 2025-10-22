@@ -19,13 +19,13 @@ namespace CampusLearn.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Student>>> GetStudent()
         {
-            return await _context.student.ToListAsync();
+            return await _context.Students.ToListAsync();
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Student>> GetStudent(long id)
         {
-            var student = await _context.student.FindAsync(id);
+            var student = await _context.Students.FindAsync(id);
             if (student == null)
                 return NotFound();
             return student;
@@ -39,11 +39,11 @@ namespace CampusLearn.Controllers
 
             // Simple password hashing (replace with secure hashing in production)
             student.PasswordHash = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(student.PasswordHash));
-            student.StudentId = DateTime.Now.Ticks;
+            student.StudentID = DateTime.Now.Ticks;
 
-            _context.student.Add(student);
+            _context.Students.Add(student);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetStudent), new { id = student.StudentId }, student);
+            return CreatedAtAction(nameof(GetStudent), new { id = student.StudentID }, student);
         }
         [HttpGet("/Students/Register")]
         public IActionResult Register()
@@ -59,9 +59,9 @@ namespace CampusLearn.Controllers
                 return View(student);
 
             student.PasswordHash = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(student.PasswordHash));
-            student.StudentId = DateTime.Now.Ticks;
+            student.StudentID = DateTime.Now.Ticks;
 
-            _context.student.Add(student);
+            _context.Students.Add(student);
             await _context.SaveChangesAsync();
 
             return RedirectToAction("Index", "LogIn"); // Redirect to login after success

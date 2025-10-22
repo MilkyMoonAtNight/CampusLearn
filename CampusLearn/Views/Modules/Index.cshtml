@@ -1,4 +1,4 @@
-﻿@model IEnumerable<CampusLearn.Models.Module>
+﻿@model IEnumerable<CampusLearn.Models.TopicModule>
 @{
     ViewData["Title"] = "Modules";
 }
@@ -23,6 +23,7 @@
         overflow: hidden;
         box-shadow: 0 0 8px rgba(0,0,0,0.05);
         transition: transform 0.2s ease;
+        cursor: pointer;
     }
 
         .module-card:hover {
@@ -64,21 +65,37 @@
 
 <div class="modules-container">
     <h2>Available Modules</h2>
-    <div class="modules-grid">
-        @foreach (var module in Model)
-        {
-            <a asp-controller="Modules" asp-action="Details" asp-route-id="@module.Id" style="text-decoration:none; color:inherit;">
-                <div class="module-card">
-                    <img src="@module.ImagePath" alt="@module.Title" class="module-image" />
-                    <div class="module-content">
-                        <div class="module-title">@module.Title</div>
-                        <div class="module-info"><strong>Instructor:</strong> @module.Instructor</div>
-                        <div class="module-info"><strong>Weeks Remaining:</strong> @module.WeeksRemaining</div>
-                        <div class="module-info"><strong>Completion:</strong> @module.Completion%</div>
-                        <button class="download-btn">Download Offline</button>
+
+    @if (!Model.Any())
+    {
+        <p>No modules available at the moment.</p>
+    }
+    else
+    {
+        <div class="modules-grid">
+            @foreach (var module in Model)
+            {
+                <!-- Default fallback values if DB doesn’t have them -->
+                var imagePath = module.ModuleCluster?.ClusterName?.ToLower().Contains("english") == true
+                ? "/images/english.jpg"
+                : "/images/default-module.jpg";
+
+                var completion = new Random().Next(10, 90);
+                var weeksRemaining = new Random().Next(1, 8);
+
+                <a asp-controller="Modules" asp-action="Details" asp-route-id="@module.ModuleID" style="text-decoration:none; color:inherit;">
+                    <div class="module-card">
+                        <img src="@imagePath" alt="@module.ModuleName" class="module-image" />
+                        <div class="module-content">
+                            <div class="module-title">@module.ModuleName</div>
+                            <div class="module-info"><strong>Instructor:</strong> @module.ModuleHead?.TutorName ?? "TBA"</div>
+                            <div class="module-info"><strong>Weeks Remaining:</strong> @weeksRemaining</div>
+                            <div class="module-info"><strong>Completion:</strong> @completion%</div>
+                            <button class="download-btn">Download Offline</button>
+                        </div>
                     </div>
-                </div>
-            </a>
-        }
-    </div>
+                </a>
+            }
+        </div>
+    }
 </div>

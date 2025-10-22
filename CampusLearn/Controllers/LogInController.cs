@@ -21,8 +21,8 @@ namespace CampusLearn.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            // Temporary test to confirm the route is reachable
-            return Content("LogIn.Index reached");
+            // Render the login view (removed temporary Content response)
+            return View();
         }
 
         // POST: /LogIn/Index — use UserStore (in-memory) for authentication
@@ -68,10 +68,15 @@ namespace CampusLearn.Controllers
             if (!ModelState.IsValid)
                 return View(student);
 
-            student.PasswordHash = System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(student.PasswordHash));
-            student.StudentId = System.DateTime.Now.Ticks;
 
-            _context.student.Add(student);
+            student.PasswordHash = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(student.PasswordHash));
+            student.StudentID = DateTime.Now.Ticks;
+
+            student.PasswordHash = System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(student.PasswordHash));
+            student.StudentID = System.DateTime.Now.Ticks;
+
+
+            _context.Students.Add(student);
             await _context.SaveChangesAsync();
 
             return RedirectToAction("Index");
