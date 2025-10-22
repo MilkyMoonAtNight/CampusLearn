@@ -1,10 +1,9 @@
-﻿@{
-    ViewData["Title"] = "Login";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+﻿@model CampusLearn.Models.Student
+@{
+    ViewData["Title"] = "Register";
 }
-
 <style>
-    :root{
+    :root {
         --primary: #6a0dad;
         --primary-600: #5a0099;
         --muted: #6b7280;
@@ -20,9 +19,7 @@
         align-items: center;
         justify-content: center;
         padding: 48px 20px;
-        background: radial-gradient(800px 400px at 10% 10%, rgba(106,13,173,0.06), transparent),
-                    radial-gradient(700px 350px at 90% 90%, rgba(0,122,255,0.04), transparent),
-                    linear-gradient(180deg, #fbfbff 0%, #f6f8ff 100%);
+        background: radial-gradient(800px 400px at 10% 10%, rgba(106,13,173,0.06), transparent), radial-gradient(700px 350px at 90% 90%, rgba(0,122,255,0.04), transparent), linear-gradient(180deg, #fbfbff 0%, #f6f8ff 100%);
         font-family: 'Segoe UI', system-ui, -apple-system, "Helvetica Neue", Arial;
     }
 
@@ -52,11 +49,11 @@
         overflow: hidden;
     }
 
-    .brand img {
-        max-width: 64px;
-        max-height: 64px;
-        display: block;
-    }
+        .brand img {
+            max-width: 64px;
+            max-height: 64px;
+            display: block;
+        }
 
     .login-title {
         font-size: 20px;
@@ -90,13 +87,15 @@
         outline: none;
     }
 
-    .input::placeholder { color: #9aa0a6; }
+        .input::placeholder {
+            color: #9aa0a6;
+        }
 
-    .input:focus {
-        border-color: rgba(106,13,173,0.7);
-        box-shadow: 0 6px 20px rgba(106,13,173,0.08);
-        transform: translateY(-1px);
-    }
+        .input:focus {
+            border-color: rgba(106,13,173,0.7);
+            box-shadow: 0 6px 20px rgba(106,13,173,0.08);
+            transform: translateY(-1px);
+        }
 
     .btn-login {
         height: 48px;
@@ -110,10 +109,10 @@
         box-shadow: 0 8px 20px rgba(106,13,173,0.14);
     }
 
-    .btn-login:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 12px 30px rgba(106,13,173,0.18);
-    }
+        .btn-login:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 30px rgba(106,13,173,0.18);
+        }
 
     .helper-row {
         display: flex;
@@ -130,9 +129,9 @@
         font-weight: 600;
     }
 
-    .register-link:hover {
-        text-decoration: underline;
-    }
+        .register-link:hover {
+            text-decoration: underline;
+        }
 
     .alert {
         margin-top: 14px;
@@ -151,35 +150,47 @@
             border-radius: 12px;
         }
 
-        .brand { width: 64px; height: 64px; }
-        .login-title { font-size: 18px; }
+        .brand {
+            width: 64px;
+            height: 64px;
+        }
+
+        .login-title {
+            font-size: 18px;
+        }
     }
 </style>
 
 <div class="login-page">
-    <main class="login-card" role="main" aria-labelledby="login-heading">
+    <main class="login-card" role="main" aria-labelledby="register-heading">
         <div class="brand" aria-hidden="true">
             <img src="~/images/campuslearn-removebg-preview.png" alt="CampusLearn logo" />
         </div>
 
-        <h1 id="login-heading" class="login-title">Welcome to CampusLearn</h1>
-        <p class="login-subtitle">Sign in to your account to continue</p>
+        <h1 id="register-heading" class="login-title">Create Your CampusLearn Account</h1>
+        <p class="login-subtitle">Fill in your details to register</p>
 
-        <form asp-action="Index" method="post" class="login-form" novalidate>
+        <form asp-action="Register" method="post" class="login-form" novalidate>
             @Html.AntiForgeryToken()
-            <input class="input" type="text" name="username" placeholder="Username" required autocomplete="username" />
-            <input class="input" type="password" name="password" placeholder="Password" required autocomplete="current-password" />
-            <button type="submit" class="btn-login">Sign in</button>
+
+            <input class="input" asp-for="FirstName" placeholder="First Name" />
+            <input class="input" asp-for="MiddleName" placeholder="Middle Name (optional)" />
+            <input class="input" asp-for="LastName" placeholder="Last Name" />
+            <input class="input" asp-for="PersonalEmail" placeholder="Email" />
+            <input class="input" asp-for="Phone" placeholder="Phone Number" />
+            <input class="input" asp-for="PasswordHash" type="password" placeholder="Password" />
+
+            <button type="submit" class="btn-login">Register</button>
         </form>
 
-        @if (ViewBag.Error != null)
+        @if (!ViewData.ModelState.IsValid)
         {
-            <div class="alert" role="alert">@ViewBag.Error</div>
+            <div class="alert" role="alert">Please correct the errors and try again.</div>
         }
 
-        <div class="helper-row" aria-hidden="false">
-            <span style="color:var(--muted);">Don't have an account?</span>
-            <a asp-controller="LogIn" asp-action="Register" class="register-link">Register</a>
+        <div class="helper-row">
+            <span style="color:var(--muted);">Already have an account?</span>
+            <a asp-controller="LogIn" asp-action="Index" class="register-link">Sign In</a>
         </div>
     </main>
 </div>

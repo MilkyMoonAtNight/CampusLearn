@@ -1,13 +1,27 @@
-﻿namespace CampusLearn.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace CampusLearn.Models
 {
     public class Student
     {
-        public long studentid { get; set; }
-        public string firstname { get; set; } = "";
-        public string? middlename { get; set; }
-        public string lastname { get; set; } = "";
-        public string? personalemail { get; set; }
-        public string? phone { get; set; }
-        public string passwordhash { get; set; } = "";
+        public long StudentId { get; set; }
+
+        [Required]
+        public string FirstName { get; set; } = "";
+
+        public string? MiddleName { get; set; }
+
+        [Required]
+        public string LastName { get; set; } = "";
+
+        [Required]
+        [EmailAddress]
+        public string? PersonalEmail { get; set; }
+
+        [Phone]
+        public string? Phone { get; set; }
+
+        [Required]
+        public string PasswordHash { get; set; } = "";
     }
 }
