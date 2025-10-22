@@ -7,16 +7,26 @@ namespace CampusLearn.Controllers
     {
         public IActionResult Index()
         {
-            // var messages = MessageStore.GetMessagesForUser(User.Identity.Name);
-            //return View(new ChatViewModel { Messages = messages });
-            return View();
+            var username = HttpContext.Session.GetString("LoggedInUser");
+            if (string.IsNullOrEmpty(username))
+                return RedirectToAction("Index", "LogIn");
+
+            var messages = Message.GetMessagesForUser(username);
+            var model = new MessageView { Messages = messages };
+            return View(model);
+
         }
 
         [HttpPost]
         public IActionResult SendMessage(string messageText)
         {
-            //MessageStore.SaveMessage(User.Identity.Name, messageText);
+            var username = HttpContext.Session.GetString("LoggedInUser");
+            if (string.IsNullOrEmpty(username))
+                return RedirectToAction("Index", "LogIn");
+
+            Message.SaveMessage(username, messageText, true);
             return RedirectToAction("Chat");
+
         }
 
     }

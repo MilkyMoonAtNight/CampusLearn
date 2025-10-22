@@ -79,7 +79,7 @@ namespace CampusLearn.Controllers
             _context.Students.Add(student);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("Index", "LogIn");
+            return RedirectToAction("Index");
         }
     }
 }

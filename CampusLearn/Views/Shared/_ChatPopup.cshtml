@@ -1,0 +1,43 @@
+﻿<style>
+    .chat-popup {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        width: 360px;
+        max-height: 500px;
+        background: var(--cl-surface);
+        border-radius: var(--cl-radius);
+        box-shadow: var(--cl-shadow);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+        .chat-popup.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px);
+        }
+
+</style>
+
+<div id="chatPopup" class="chat-popup hidden">
+    <div class="ai-chat">
+        <div class="ai-chat__messages">
+            @foreach (var msg in Model.Messages)
+            {
+                var cssClass = msg.IsUser ? "ai-msg--user" : "ai-msg--ai";
+                <div class="ai-msg @cssClass">
+                    <div class="ai-msg__bubble">@msg.Content</div>
+                    <div class="ai-msg__meta">@msg.SenderName • @msg.Timestamp.ToString("HH:mm")</div>
+                </div>
+            }
+        </div>
+        <form asp-action="SendMessage" method="post" class="ai-chat__composer">
+            <div class="input-group">
+                <input type="text" name="MessageText" class="form-control ai-chat__input" placeholder="Type a message..." required />
+                <button type="submit" class="ai-chat__send">Send</button>
+            </div>
+        </form>
+    </div>
+</div>
+

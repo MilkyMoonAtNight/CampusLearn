@@ -22,5 +22,26 @@ namespace CampusLearn.Models
 
         public bool IsUser { get; set; }
     }
+        private static readonly List<Message> _messages = new();
+
+        public static List<Message> GetMessagesForUser(string username)
+        {
+            return _messages
+                .Where(m => m.SenderName == username || m.IsUser)
+                .OrderBy(m => m.Timestamp)
+                .ToList();
+        }
+
+        public static void SaveMessage(string senderName, string content, bool isUser)
+        {
+            _messages.Add(new Message
+            {
+                SenderName = senderName,
+                Content = content,
+                Timestamp = DateTime.Now,
+                IsUser = isUser
+            });
+        }
+    }
 
 }

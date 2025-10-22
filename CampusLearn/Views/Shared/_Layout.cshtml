@@ -388,6 +388,23 @@
             }
         </div>
     </div>
+    @await Html.PartialAsync("_ChatPopup", new CampusLearn.Models.MessageView {
+    Messages = new List<CampusLearn.Models.Message> {
+        new CampusLearn.Models.Message {
+        SenderName = "Teacher",
+        Content = "Welcome to CampusLearn!",
+        Timestamp = DateTime.Now,
+        IsUser = false
+        }}})
+    <button onclick="toggleChat()" class="chat-toggle-btn">💬 Chat</button>
+
+    <script>
+        function toggleChat() {
+            const popup = document.getElementById('chatPopup');
+            popup.classList.toggle('hidden');
+        }
+    </script>
+
 
     <footer class="border-top footer text-muted">
         <div class="container">
