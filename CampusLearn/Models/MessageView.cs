@@ -21,7 +21,7 @@ namespace CampusLearn.Models
         public DateTime Timestamp { get; set; } = DateTime.Now;
 
         public bool IsUser { get; set; }
-    }
+    
         private static readonly List<Message> _messages = new();
 
         public static List<Message> GetMessagesForUser(string username)
