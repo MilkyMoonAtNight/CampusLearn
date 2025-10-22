@@ -1,4 +1,6 @@
 using CampusLearn.Data;
+
+using CampusLearn.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -23,6 +25,8 @@ builder.Services.AddSwaggerGen(c =>
         Description = "API for the CampusLearn E-Learning Platform"
     });
 });
+
+builder.Services.AddSingleton<IAnnouncementsStore, AnnouncementsStore>();
 
 var app = builder.Build();
 
