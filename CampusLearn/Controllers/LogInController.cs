@@ -52,7 +52,7 @@ namespace CampusLearn.Controllers
             HttpContext.Session.SetString("FullName", user.FullName);
             HttpContext.Session.SetString("Email", user.Email ?? string.Empty);
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "LogIn");
         }
 
         [HttpGet]
@@ -79,7 +79,7 @@ namespace CampusLearn.Controllers
             _context.Students.Add(student);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("Index");
+            return RedirectToAction("Index", "LogIn");
         }
     }
 }
