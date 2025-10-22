@@ -1,0 +1,115 @@
+﻿@model CampusLearn.Models.ForumTopic
+@{
+    ViewData["Title"] = "Forum Details";
+}
+<style>
+    .replies-container {
+        margin-top: 30px;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 10px;
+        box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    .reply {
+        padding: 15px;
+        margin-bottom: 15px;
+        background-color: #ffffff;
+        border-left: 4px solid #0078D7;
+        border-radius: 8px;
+    }
+
+    .reply-author {
+        font-weight: bold;
+        color: #0078D7;
+    }
+
+    .reply-timestamp {
+        font-size: 0.85em;
+        color: #888;
+        margin-left: 5px;
+    }
+
+    .reply-message {
+        margin-top: 8px;
+        font-size: 1em;
+        line-height: 1.4;
+    }
+
+    .reply-form {
+        margin-top: 40px;
+        padding: 20px;
+        background-color: #eef6ff;
+        border-radius: 10px;
+    }
+
+        .reply-form label {
+            font-weight: bold;
+        }
+
+        .reply-form input,
+        .reply-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .reply-form button {
+            background-color: #0078D7;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+            .reply-form button:hover {
+                background-color: #005a9e;
+            }
+</style>
+
+<div class="forums-container">
+    <!-- Forum Details -->
+    <div class="forum-header">
+        <h2>@Model.Title</h2>
+        <p><strong>Subject:</strong> @Model.Subject</p>
+        <p><strong>Description:</strong> @Model.Description</p>
+        <p><strong>Progress:</strong> @Model.Progress</p>
+        <p><strong>Created:</strong> @Model.CreatedAt.ToShortDateString()</p>
+    </div>
+
+    <!-- Replies -->
+    <div class="replies-container">
+        <h4>Replies</h4>
+        @if (Model.Replies != null && Model.Replies.Any())
+        {
+            foreach (var reply in Model.Replies)
+            {
+                <div class="reply">
+                    <span class="reply-author">@reply.Author</span>
+                    <span class="reply-timestamp">(@reply.PostedAt.ToShortTimeString())</span>
+                    <div class="reply-message">@reply.Message</div>
+                </div>
+            }
+        }
+        else
+        {
+            <p>No replies yet. Be the first to comment!</p>
+        }
+    </div>
+
+    <!-- Reply Form -->
+    <div class="reply-form">
+        <form asp-action="AddReply" method="post">
+            <input type="hidden" name="id" value="@Model.Id" />
+            <label>Your Name:</label>
+            <input name="author" />
+            <label>Message:</label>
+            <textarea name="message" rows="4"></textarea>
+            <button type="submit">Reply</button>
+        </form>
+    </div>
+</div>

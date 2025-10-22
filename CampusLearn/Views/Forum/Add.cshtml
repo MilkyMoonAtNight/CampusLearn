@@ -1,0 +1,82 @@
+﻿@model CampusLearn.Models.ForumTopic
+@{
+    ViewData["Title"] = "Add Forum";
+}
+
+<style>
+    .add-forum-container {
+        max-width: 600px;
+        margin: auto;
+        padding: 30px;
+        font-family: 'Segoe UI', sans-serif;
+        background: linear-gradient(to right, #f0f8ff, #e6f7ff);
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+        .add-forum-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+        .form-group label {
+            font-weight: bold;
+        }
+
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+
+    .btn-submit {
+        background: linear-gradient(to right, #0078D7, #00BFFF);
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        width: 100%;
+        font-size: 16px;
+    }
+
+        .btn-submit:hover {
+            background: linear-gradient(to right, #005a9e, #009acd);
+        }
+</style>
+
+<div class="add-forum-container">
+    <h2>Add New Forum</h2>
+
+    <form asp-action="Add" method="post">
+        <div class="form-group">
+            <label asp-for="Title"></label>
+            <input asp-for="Title" class="form-control" placeholder="Enter topic title..." />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Subject"></label>
+            <input asp-for="Subject" class="form-control" placeholder="Enter subject..." />
+            <span asp-validation-for="Subject" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Description"></label>
+            <textarea asp-for="Description" class="form-control" rows="4" placeholder="Start the discussion..."></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn-submit">Submit</button>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

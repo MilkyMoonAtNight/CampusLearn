@@ -28,7 +28,7 @@ namespace CampusLearn.Controllers
             if (user != null)
             {
                 HttpContext.Session.SetString("LoggedInUser", username);
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "Dashboard");
             }
 
             ViewBag.Error = "Invalid username or password.";

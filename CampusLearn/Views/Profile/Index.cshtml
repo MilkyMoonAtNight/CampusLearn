@@ -64,7 +64,7 @@
     <!-- Top Section -->
     <div class="profile-header">
         <div class="avatar">
-            <img src="~/images/avatar-placeholder.png" alt="User Avatar" />
+            <img src="~/images/user.svg" alt="User Avatar" />
         </div>
         <h2>@Model.FullName</h2>
         <p class="last-access">Last access: @Model.LastAccess.ToString("dddd, d MMMM yyyy")</p>
@@ -73,19 +73,19 @@
     <!-- Middle Section: Quadrants -->
     <div class="profile-actions">
         <div class="action-box">
-            <img src="~/images/icon-contacts.png" alt="Contacts" />
+            <img src="~/images/address-book.svg" alt="Contacts" />
             <span>Contacts</span>
         </div>
         <div class="action-box">
-            <img src="~/images/icon-forums.png" alt="Forums" />
+            <a class="nav-link text-dark" asp-controller="Forums" asp-action="Index"><img src="~/images/browsers.svg" alt="Forums" /></a>
             <span>Forums</span>
         </div>
         <div class="action-box">
-            <img src="~/images/icon-badges.png" alt="Badges" />
+            <img src="~/images/seal.svg" alt="Badges" />
             <span>Badges</span>
         </div>
         <div class="action-box">
-            <img src="~/images/icon-linkedin.png" alt="LinkedIn" />
+            <a href="www.linkedin.com/home/?originalSubdomain=za"><img src="~/images/linkedin-logo.svg" alt="LinkedIn" /></a>
             <span>LinkedIn</span>
         </div>
     </div>
