@@ -1,8 +1,158 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
+<style>
 
-<div class="text-center">
+    :root {
+        --primary: #6a0dad;
+        --primary-600: #5a0099;
+        --muted: #6b7280;
+        --bg-soft: rgba(106,13,173,0.03);
+        --glass-shadow: 0 8px 40px rgba(16,18,38,0.04);
+        --content-max: 1100px;
+        --radius-lg: 16px;
+        --radius-md: 12px;
+    }
+
+    /* Base typography to align with the app's modern UI */
+    body {
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+        color: #0f172a;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        background: transparent;
+    }
+
+    /* Ensure main content has breathing room */
+    main[role="main"] {
+        padding-top: 2rem;
+        padding-bottom: 2.5rem;
+    }
+
+    /* Modern hero for the Home page */
+    .home-hero {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        max-width: var(--content-max);
+        margin: 1.25rem auto;
+        padding: clamp(1.25rem, 3.5vw, 3rem);
+        background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(250,250,252,0.92));
+        border-radius: var(--radius-lg);
+        box-shadow: var(--glass-shadow);
+        border: 1px solid rgba(16,18,38,0.04);
+        text-align: center;
+    }
+
+    /* Responsive min-height so hero feels substantial on desktop */
+    @@media (min-width: 992px) {
+        .home-hero
+
+    {
+        min-height: 36vh;
+    }
+
+    }
+
+    /* Headline */
+    .home-hero .display-4 {
+        margin: 0;
+        line-height: 1.02;
+        font-weight: 800;
+        color: var(--primary-600);
+        font-size: clamp(1.6rem, 3.8vw, 2.4rem);
+        letter-spacing: -0.02em;
+        text-wrap: balance;
+    }
+
+    /* Subtext */
+    .home-hero p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 1.05rem;
+        max-width: 76ch;
+    }
+
+    /* Actions row */
+    .hero-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    /* Primary button (modern gradient pill) */
+    .home-hero .btn-primary {
+        background: linear-gradient(90deg, var(--primary), var(--primary-600));
+        border: none;
+        color: #fff;
+        padding: 0.6rem 1.15rem;
+        font-weight: 700;
+        border-radius: 999px;
+        box-shadow: 0 8px 20px rgba(106,13,173,0.12);
+        transition: transform 160ms ease, box-shadow 160ms ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+        /* Hover/focus affordance */
+        .home-hero .btn-primary:hover,
+        .home-hero .btn-primary:focus {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(106,13,173,0.14);
+            text-decoration: none;
+        }
+
+    /* Secondary outline button */
+    .home-hero .btn-outline-secondary {
+        background: transparent;
+        color: var(--primary-600);
+        border: 1px solid rgba(106,13,173,0.12);
+        padding: 0.5rem 1rem;
+        border-radius: 999px;
+        font-weight: 700;
+        transition: background-color 140ms ease, color 140ms ease, transform 140ms ease;
+    }
+
+        .home-hero .btn-outline-secondary:hover,
+        .home-hero .btn-outline-secondary:focus {
+            background: linear-gradient(90deg, rgba(106,13,173,0.04), rgba(106,13,173,0.02));
+            transform: translateY(-2px);
+            text-decoration: none;
+        }
+
+    /* Make inline links subtle and consistent with theme */
+    .home-hero a {
+        color: var(--primary-600);
+        font-weight: 600;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+    /* Small screens: tighter spacing */
+    @@media (max-width: 576px) {
+        .home-hero
+
+    {
+        margin: 0.75rem;
+        padding: 1.2rem;
+        border-radius: 12px;
+    }
+
+    .hero-actions {
+        gap: 0.5rem;
+    }
+
+    }
+
+
+
+</style>
+<section class="home-hero text-center">
     @if (Model != null)
     {
         <h1 class="display-4">Welcome, @Model.Username</h1>
@@ -12,4 +162,9 @@
         <h1 class="display-4">Welcome, guest</h1>
     }
     <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+
+    <div class="hero-actions">
+        <a class="btn btn-primary" asp-controller="Dashboard" asp-action="Index">Go to Dashboard</a>
+        <a class="btn btn-outline-secondary" href="https://learn.microsoft.com/aspnet/core" target="_blank" rel="noopener">Learn more</a>
+    </div>
+</section>
