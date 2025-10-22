@@ -1,38 +1,40 @@
-﻿using CampusLearn.Models;
+﻿using CampusLearn.Data;
+using CampusLearn.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CampusLearn.Controllers
 {
     public class LogInController : Controller
     {
+        private readonly CampusLearnContext _context;
+
+        public LogInController(CampusLearnContext context)
+        {
+            _context = context;
+        }
+
+        // Existing login logic...
+
         [HttpGet]
-        public IActionResult Index()
+        public IActionResult Register()
         {
             return View();
         }
 
-
         [HttpPost]
-        public IActionResult Index(string username, string password)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(Student student)
         {
-            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
-            {
-                ViewBag.Error = "Username and password are required.";
-                return View();
-            }
+            if (!ModelState.IsValid)
+                return View(student);
 
-            var user = UserStore.Users.FirstOrDefault(u =>
-                u.Username.Equals(username, StringComparison.OrdinalIgnoreCase) &&
-                u.Password == password);
+            student.PasswordHash = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(student.PasswordHash));
+            student.StudentId = DateTime.Now.Ticks;
 
-            if (user != null)
-            {
-                HttpContext.Session.SetString("LoggedInUser", username);
-                return RedirectToAction("Index", "Dashboard");
-            }
+            _context.student.Add(student);
+            await _context.SaveChangesAsync();
 
-            ViewBag.Error = "Invalid username or password.";
-            return View();
+            return RedirectToAction("Index");
         }
     }
 }
