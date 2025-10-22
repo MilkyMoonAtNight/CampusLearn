@@ -1,0 +1,84 @@
+﻿@model CampusLearn.Models.Module
+@{
+    ViewData["Title"] = "Module Details";
+}
+
+<style>
+    .module-details {
+        max-width: 900px;
+        margin: auto;
+        padding: 30px;
+        font-family: 'Segoe UI';
+    }
+
+    .section {
+        margin-bottom: 40px;
+    }
+
+        .section h3 {
+            margin-bottom: 15px;
+            border-bottom: 2px solid #0078D7;
+            padding-bottom: 5px;
+        }
+
+    .card {
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        box-shadow: 0 0 5px rgba(0,0,0,0.05);
+    }
+
+    .card-title {
+        font-weight: bold;
+        color: #0078D7;
+    }
+
+    .card-sub {
+        font-size: 0.9em;
+        color: #555;
+        margin-bottom: 5px;
+    }
+</style>
+
+<div class="module-details">
+    <h2>@Model.Title</h2>
+    <p><strong>Instructor:</strong> @Model.Instructor</p>
+    <p><strong>Weeks Remaining:</strong> @Model.WeeksRemaining</p>
+    <p><strong>Completion:</strong> @Model.Completion%</p>
+
+    <div class="section">
+        <h3>Weekly Content</h3>
+        @foreach (var week in Model.WeeklyContent)
+        {
+            <div class="card">
+                <div class="card-title">Week @week.WeekNumber: @week.Topic</div>
+                <div class="card-sub">@week.Description</div>
+            </div>
+        }
+    </div>
+
+    <div class="section">
+        <h3>Announcements</h3>
+        @foreach (var note in Model.Announcements)
+        {
+            <div class="card">
+                <div class="card-title">@note.Title</div>
+                <div class="card-sub">@note.PostedAt.ToShortDateString()</div>
+                <p>@note.Message</p>
+            </div>
+        }
+    </div>
+
+    <div class="section">
+        <h3>📝 Assignments</h3>
+        @foreach (var task in Model.Assignments)
+        {
+            <div class="card">
+                <div class="card-title">@task.Title</div>
+                <div class="card-sub">Due: @task.DueDate.ToShortDateString()</div>
+                <p>@task.Instructions</p>
+            </div>
+        }
+    </div>
+</div>
