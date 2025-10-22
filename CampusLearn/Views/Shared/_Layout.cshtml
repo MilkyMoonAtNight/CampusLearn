@@ -364,10 +364,29 @@
             </nav>
         </header>
     }
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+    @{
+        var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+        bool showSidebar = !string.Equals(controller, "LogIn", StringComparison.OrdinalIgnoreCase);
+    }
+
+    <div class="container-fluid">
+        <div class="row">
+            @if (showSidebar)
+            {
+                <aside class="col-12 col-md-3 col-lg-2 p-0">
+                    @await Html.PartialAsync("_Sidebar")
+                </aside>
+                <main role="main" class="col-12 col-md-9 col-lg-10 pb-3">
+                    @RenderBody()
+                </main>
+            }
+            else
+            {
+                <main role="main" class="col-12 pb-3">
+                    @RenderBody()
+                </main>
+            }
+        </div>
     </div>
 
     <footer class="border-top footer text-muted">

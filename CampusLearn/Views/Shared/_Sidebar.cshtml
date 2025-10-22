@@ -1,0 +1,23 @@
+﻿@{
+    var current = ViewContext.RouteData.Values["controller"]?.ToString();
+}
+
+<!-- Sidebar Container -->
+<div class="p-3 border-end bg-light min-vh-100">
+    <h5 class="mb-3 text-primary">CampusLearn</h5>
+
+    <nav class="nav flex-column">
+        <a asp-controller="Announcements" asp-action="Index"
+           class="nav-link @(current == "Announcements" ? "active fw-bold text-dark" : "text-muted")">
+            📰 Announcements
+        </a>
+    </nav>
+</div>
+
+<style>
+    .nav-link.active {
+        background-color: #e6eafc;
+        border-radius: 6px;
+    }
+</style>
+
