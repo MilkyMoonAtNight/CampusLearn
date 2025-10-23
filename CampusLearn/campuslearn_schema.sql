@@ -1,155 +1,224 @@
-﻿-- ============ CORE PEOPLE ============
-
-CREATE TABLE Student (
-  StudentID       BIGSERIAL PRIMARY KEY,
-  FirstName       VARCHAR(60) NOT NULL,
-  MiddleName      VARCHAR(60),
-  LastName        VARCHAR(60) NOT NULL,
-  PersonalEmail   VARCHAR(255) UNIQUE,
-  Phone           VARCHAR(30),
-  PasswordHash    TEXT NOT NULL
+﻿CREATE TABLE Faculty (
+    FacultyID INT PRIMARY KEY IDENTITY(1,1),
+    FacultyName NVARCHAR(120) NOT NULL
 );
 
-CREATE TABLE Speciality (
-  SpecialityID    SERIAL PRIMARY KEY,
-  SpecialityName  VARCHAR(100) UNIQUE NOT NULL
-);
-
-CREATE TABLE Tutor (
-  TutorID         BIGSERIAL PRIMARY KEY,
-  TutorName       VARCHAR(60) NOT NULL,
-  TutorMiddleInit VARCHAR(10),
-  TutorSurname    VARCHAR(60) NOT NULL,
-  SpecialityID    INT REFERENCES Speciality(SpecialityID)
-);
-
-CREATE TABLE StudentTutor (
-  StudentID BIGINT REFERENCES Student(StudentID) ON DELETE CASCADE,
-  TutorID   BIGINT REFERENCES Tutor(TutorID)     ON DELETE CASCADE,
-  PRIMARY KEY (StudentID, TutorID)
-);
-
--- ============ FACULTIES, DEGREES, MODULES ============
-
-CREATE TABLE Faculty (
-  FacultyID     SERIAL PRIMARY KEY,
-  FacultyName   VARCHAR(120) UNIQUE NOT NULL
-);
-
+-- =========================
+-- Degree
+-- =========================
 CREATE TABLE Degree (
-  DegreeID       SERIAL PRIMARY KEY,
-  DegreeName     VARCHAR(160) NOT NULL,
-  FacultyID      INT REFERENCES Faculty(FacultyID) NOT NULL,
-  DegreeDuration SMALLINT,
-  DegreeNQF      SMALLINT,
-  DegreeCredits  SMALLINT,
-  UNIQUE (DegreeName, FacultyID)
+    DegreeID INT PRIMARY KEY IDENTITY(1,1),
+    DegreeName NVARCHAR(255) NOT NULL,
+    FacultyID INT NOT NULL,
+    FOREIGN KEY (FacultyID) REFERENCES Faculty(FacultyID)
 );
 
+-- =========================
+-- TopicModule
+-- =========================
+CREATE TABLE TopicModule (
+    ModuleID INT PRIMARY KEY IDENTITY(1,1),
+    ModuleName NVARCHAR(255) NOT NULL,
+    ClusterID INT NULL,
+    ModuleHeadID BIGINT NULL
+);
+
+-- =========================
+-- ModuleCluster
+-- =========================
 CREATE TABLE ModuleCluster (
-  ClusterID   SERIAL PRIMARY KEY,
-  ClusterName VARCHAR(100) UNIQUE NOT NULL
+    ClusterID INT PRIMARY KEY IDENTITY(1,1),
+    ClusterName NVARCHAR(100) NOT NULL
 );
 
-CREATE TABLE Module (
-  ModuleID      SERIAL PRIMARY KEY,
-  ModuleName    VARCHAR(160) UNIQUE NOT NULL,
-  ClusterID     INT REFERENCES ModuleCluster(ClusterID),
-  ModuleHeadID  BIGINT REFERENCES Tutor(TutorID)
+ALTER TABLE TopicModule
+ADD CONSTRAINT FK_TopicModule_Cluster FOREIGN KEY (ClusterID) REFERENCES ModuleCluster(ClusterID);
+
+-- =========================
+-- Tutors
+-- =========================
+CREATE TABLE Tutors (
+    TutorID BIGINT PRIMARY KEY IDENTITY(1,1),
+    TutorName NVARCHAR(255) NOT NULL,
+    TutorSurname NVARCHAR(255) NOT NULL,
+    SpecialityID INT NULL
 );
 
+-- =========================
+-- Speciality
+-- =========================
+CREATE TABLE Speciality (
+    SpecialityID INT PRIMARY KEY IDENTITY(1,1),
+    SpecialityName NVARCHAR(100) NOT NULL
+);
+
+ALTER TABLE Tutors
+ADD CONSTRAINT FK_Tutors_Speciality FOREIGN KEY (SpecialityID) REFERENCES Speciality(SpecialityID);
+
+ALTER TABLE TopicModule
+ADD CONSTRAINT FK_TopicModule_Tutor FOREIGN KEY (ModuleHeadID) REFERENCES Tutors(TutorID);
+
+-- =========================
+-- DegreeModule (Join Table)
+-- =========================
 CREATE TABLE DegreeModule (
-  DegreeID  INT    REFERENCES Degree(DegreeID) ON DELETE CASCADE,
-  ModuleID  INT    REFERENCES Module(ModuleID) ON DELETE CASCADE,
-  PRIMARY KEY (DegreeID, ModuleID)
+    DegreeID INT NOT NULL,
+    ModuleID INT NOT NULL,
+    PRIMARY KEY (DegreeID, ModuleID),
+    FOREIGN KEY (DegreeID) REFERENCES Degree(DegreeID),
+    FOREIGN KEY (ModuleID) REFERENCES TopicModule(ModuleID)
 );
 
+-- =========================
+-- ModuleResource
+-- =========================
 CREATE TABLE ModuleResource (
-  ResourceID   SERIAL PRIMARY KEY,
-  ModuleID     INT REFERENCES Module(ModuleID) ON DELETE CASCADE,
-  ResourceType VARCHAR(40),
-  ResourceURL  TEXT NOT NULL
+    ResourceID INT PRIMARY KEY IDENTITY(1,1),
+    ModuleID INT NOT NULL,
+    ResourceType NVARCHAR(40),
+    ResourceURL NVARCHAR(MAX) NOT NULL,
+    FOREIGN KEY (ModuleID) REFERENCES TopicModule(ModuleID)
 );
 
--- ============ ENROLLMENT ============
+-- =========================
+-- Student
+-- =========================
+CREATE TABLE Student (
+    StudentID BIGINT PRIMARY KEY IDENTITY(1,1),
+    FirstName NVARCHAR(255) NOT NULL,
+    LastName NVARCHAR(255) NOT NULL,
+    PersonalEmail NVARCHAR(255),
+    Phone NVARCHAR(50),
+    PasswordHash NVARCHAR(255) NOT NULL
+);
 
+-- =========================
+-- Enrollment
+-- =========================
 CREATE TABLE Enrollment (
-  EnrollmentID   BIGSERIAL PRIMARY KEY,
-  StudentID      BIGINT REFERENCES Student(StudentID) ON DELETE CASCADE,
-  EnrollmentDate DATE NOT NULL
+    EnrollmentID BIGINT PRIMARY KEY IDENTITY(1,1),
+    StudentID BIGINT NOT NULL,
+    EnrollmentDate DATETIME NOT NULL,
+    FOREIGN KEY (StudentID) REFERENCES Student(StudentID)
 );
 
+-- =========================
+-- EnrollmentDegree (Join Table)
+-- =========================
 CREATE TABLE EnrollmentDegree (
-  EnrollmentID BIGINT REFERENCES Enrollment(EnrollmentID) ON DELETE CASCADE,
-  DegreeID     INT    REFERENCES Degree(DegreeID)        ON DELETE CASCADE,
-  PRIMARY KEY (EnrollmentID, DegreeID)
+    EnrollmentID BIGINT NOT NULL,
+    DegreeID INT NOT NULL,
+    PRIMARY KEY (EnrollmentID, DegreeID),
+    FOREIGN KEY (EnrollmentID) REFERENCES Enrollment(EnrollmentID),
+    FOREIGN KEY (DegreeID) REFERENCES Degree(DegreeID)
 );
 
--- ============ TUTORING SESSIONS ============
-
-CREATE TABLE Session (
-  SessionID     BIGSERIAL PRIMARY KEY,
-  SessionTopic  VARCHAR(200) NOT NULL,
-  SessionStart  TIMESTAMP NOT NULL,
-  SessionEnd    TIMESTAMP
-);
-
-CREATE TABLE SessionTutor (
-  SessionID BIGINT REFERENCES Session(SessionID) ON DELETE CASCADE,
-  TutorID   BIGINT REFERENCES Tutor(TutorID)     ON DELETE CASCADE,
-  PRIMARY KEY (SessionID, TutorID)
-);
-
-CREATE TABLE SessionStudent (
-  SessionID BIGINT REFERENCES Session(SessionID) ON DELETE CASCADE,
-  StudentID BIGINT REFERENCES Student(StudentID) ON DELETE CASCADE,
-  PRIMARY KEY (SessionID, StudentID)
-);
-
--- ============ RATINGS ============
-
-CREATE TABLE Rating (
-  RatingID       BIGSERIAL PRIMARY KEY,
-  RatingValue    SMALLINT NOT NULL CHECK (RatingValue BETWEEN 1 AND 5),
-  RatingComment  TEXT,
-  RatingDate     DATE NOT NULL DEFAULT GETDATE()
-);
-
-CREATE TABLE SessionRating (
-  SessionID BIGINT REFERENCES Session(SessionID) ON DELETE CASCADE,
-  RatingID  BIGINT REFERENCES Rating(RatingID)   ON DELETE CASCADE,
-  PRIMARY KEY (SessionID, RatingID)
-);
-
--- ============ AI CHAT SYSTEM ============
-
+-- =========================
+-- ChatSession
+-- =========================
 CREATE TABLE ChatSession (
-    ChatSessionID SERIAL PRIMARY KEY,
-    StudentID BIGINT REFERENCES Student(StudentID) ON DELETE SET NULL,
-    StartedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    EndedAt TIMESTAMP,
-    Topic VARCHAR(255),
-    IsActive BOOLEAN DEFAULT TRUE
+    ChatSessionID BIGINT PRIMARY KEY IDENTITY(1,1),
+    StudentID BIGINT NOT NULL,
+    StartedAt DATETIME NOT NULL DEFAULT GETDATE(),
+    EndedAt DATETIME NULL,
+    Topic NVARCHAR(100),
+    FOREIGN KEY (StudentID) REFERENCES Student(StudentID)
 );
 
-CREATE TABLE ChatMessage (
-    ChatMessageID SERIAL PRIMARY KEY,
-    ChatSessionID INT REFERENCES ChatSession(ChatSessionID) ON DELETE CASCADE,
-    SenderRole VARCHAR(20) CHECK (SenderRole IN ('User', 'AI', 'Tutor')),
-    MessageText TEXT NOT NULL,
-    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- =========================
+-- ChatMessages
+-- =========================
+CREATE TABLE ChatMessages (
+    ChatMessageID BIGINT PRIMARY KEY IDENTITY(1,1),
+    ChatSessionID BIGINT NOT NULL,
+    IsFromStudent BIT NOT NULL,
+    MessageText NVARCHAR(MAX) NOT NULL,
+    SentAt DATETIME NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (ChatSessionID) REFERENCES ChatSession(ChatSessionID)
 );
 
+-- =========================
+-- ForumTopic + Reply (embedded class)
+-- =========================
+CREATE TABLE ForumTopic (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    Title NVARCHAR(255) NOT NULL,
+    Subject NVARCHAR(255) NOT NULL,
+    Description NVARCHAR(MAX) NOT NULL,
+    Contributions INT NOT NULL DEFAULT 0,
+    Progress NVARCHAR(50) NOT NULL DEFAULT 'Fresh',
+    CreatedAt DATETIME NOT NULL DEFAULT GETDATE()
+);
 
+CREATE TABLE Reply (
+    ReplyID INT PRIMARY KEY IDENTITY(1,1),
+    ForumTopicId INT NOT NULL,
+    Author NVARCHAR(255) NOT NULL,
+    Message NVARCHAR(MAX) NOT NULL,
+    PostedAt DATETIME NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (ForumTopicId) REFERENCES ForumTopic(Id)
+);
 
--- Indexes
-CREATE INDEX ix_enrollment_student ON Enrollment(StudentID);
-CREATE INDEX ix_session_start ON Session(SessionStart);
-CREATE INDEX ix_degreemodule_mod ON DegreeModule(ModuleID);
-CREATE INDEX ix_sessionstudent_stu ON SessionStudent(StudentID);
-CREATE INDEX ix_sessiontutor_tut ON SessionTutor(TutorID);
-CREATE INDEX idx_chatsession_student ON ChatSession(StudentID);
-CREATE INDEX idx_chatmessage_session ON ChatMessage(ChatSessionID);
+-- =========================
+-- Session
+-- =========================
+CREATE TABLE Session (
+    SessionID BIGINT PRIMARY KEY IDENTITY(1,1),
+    SessionTopic NVARCHAR(255) NOT NULL
+);
+
+-- =========================
+-- Rating
+-- =========================
+CREATE TABLE Rating (
+    RatingID BIGINT PRIMARY KEY IDENTITY(1,1),
+    RatingValue SMALLINT NOT NULL
+);
+
+-- =========================
+-- SessionRating (Join Table)
+-- =========================
+CREATE TABLE SessionRating (
+    SessionID BIGINT NOT NULL,
+    RatingID BIGINT NOT NULL,
+    PRIMARY KEY (SessionID, RatingID),
+    FOREIGN KEY (SessionID) REFERENCES Session(SessionID),
+    FOREIGN KEY (RatingID) REFERENCES Rating(RatingID)
+);
+
+-- =========================
+-- SessionStudent (Join Table)
+-- =========================
+CREATE TABLE SessionStudent (
+    SessionID BIGINT NOT NULL,
+    StudentID BIGINT NOT NULL,
+    PRIMARY KEY (SessionID, StudentID),
+    FOREIGN KEY (SessionID) REFERENCES Session(SessionID),
+    FOREIGN KEY (StudentID) REFERENCES Student(StudentID)
+);
+
+-- =========================
+-- SessionTutor (Join Table)
+-- =========================
+CREATE TABLE SessionTutor (
+    SessionID BIGINT NOT NULL,
+    TutorID BIGINT NOT NULL,
+    PRIMARY KEY (SessionID, TutorID),
+    FOREIGN KEY (SessionID) REFERENCES Session(SessionID),
+    FOREIGN KEY (TutorID) REFERENCES Tutors(TutorID)
+);
+
+-- =========================
+-- StudentTutor (Join Table)
+-- =========================
+CREATE TABLE StudentTutor (
+    StudentID BIGINT NOT NULL,
+    TutorID BIGINT NOT NULL,
+    PRIMARY KEY (StudentID, TutorID),
+    FOREIGN KEY (StudentID) REFERENCES Student(StudentID),
+    FOREIGN KEY (TutorID) REFERENCES Tutors(TutorID)
+);
+
 
 
 

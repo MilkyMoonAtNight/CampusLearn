@@ -8,12 +8,12 @@ namespace CampusLearn.Models
         [Key]
         public int ResourceID { get; set; }
 
-        [ForeignKey("Module")]
+        [ForeignKey("TopicModule")]
         public int ModuleID { get; set; }
-        public TopicModule Module { get; set; }
+        public TopicModule? TopicModule { get; set; }
 
         [MaxLength(40)]
-        public string ResourceType { get; set; }
+        public string? ResourceType { get; set; }
 
         [Required]
         public string ResourceURL { get; set; }

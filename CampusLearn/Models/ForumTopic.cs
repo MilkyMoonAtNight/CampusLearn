@@ -24,6 +24,7 @@ namespace CampusLearn.Models
     }
     public class Reply
     {
+        public int ReplyID { get; set; }
         public string Author { get; set; }
         public string Message { get; set; }
         public DateTime PostedAt { get; set; } = DateTime.Now;

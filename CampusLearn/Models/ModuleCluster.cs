@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace CampusLearn.Models
 {
@@ -11,6 +10,6 @@ namespace CampusLearn.Models
         [Required, MaxLength(100)]
         public string ClusterName { get; set; }
 
-        public ICollection<TopicModule> Modules { get; set; }
+        public ICollection<TopicModule> TopicModules { get; set; } = new List<TopicModule>();
     }
 }
