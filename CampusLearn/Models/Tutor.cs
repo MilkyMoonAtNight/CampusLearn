@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CampusLearn.Models
 {
-    public class Tutors
+    public class Tutor
     {
         [Key]
         public long TutorID { get; set; }
@@ -14,7 +14,6 @@ namespace CampusLearn.Models
         [Required, MaxLength(255)]
         public string TutorSurname { get; set; }
 
-        [ForeignKey("Speciality")]
         public int? SpecialityID { get; set; }
         public Speciality? Speciality { get; set; }
         public ICollection<StudentTutor> StudentTutors { get; set; } = new List<StudentTutor>();

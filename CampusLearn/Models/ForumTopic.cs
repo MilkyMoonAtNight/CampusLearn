@@ -5,7 +5,7 @@ namespace CampusLearn.Models
 {
     public class ForumTopic
     {
-        public List<Reply> Replies { get; set; } = new List<Reply>();
+        //public List<Reply> Replies { get; set; } = new List<Reply>();
         public int Id { get; set; }
         [Required]
         public string Title { get; set; }
@@ -21,13 +21,19 @@ namespace CampusLearn.Models
         public string Progress { get; set; } = "Fresh";
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        public ICollection<Reply> Replies { get; set; }
     }
     public class Reply
     {
         public int ReplyID { get; set; }
+        public int ForumTopicId { get; set; }   
         public string Author { get; set; }
         public string Message { get; set; }
-        public DateTime PostedAt { get; set; } = DateTime.Now;
+        public DateTime PostedAt { get; set; }
+
+        // Navigation property
+        public ForumTopic ForumTopic { get; set; }
     }
 
 }

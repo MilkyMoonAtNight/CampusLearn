@@ -13,8 +13,10 @@ namespace CampusLearn.Models
         public string PersonalEmail { get; set; }
         public string Phone { get; set; }
 
-        // <-- Add this
         public string PasswordHash { get; set; }
+
+        // <-- Add this
+        
 
         public ICollection<StudentTutor> StudentTutors { get; set; } = new List<StudentTutor>();
         public ICollection<SessionStudent> SessionStudents { get; set; } = new List<SessionStudent>();

@@ -1,46 +1,36 @@
-﻿CREATE TABLE Faculty (
-    FacultyID INT PRIMARY KEY IDENTITY(1,1),
-    FacultyName NVARCHAR(120) NOT NULL
+﻿-- =========================
+-- Faculty
+-- =========================
+CREATE TABLE Faculty (
+    FacultyID SERIAL PRIMARY KEY,
+    FacultyName VARCHAR(120) NOT NULL
 );
 
 -- =========================
 -- Degree
 -- =========================
 CREATE TABLE Degree (
-    DegreeID INT PRIMARY KEY IDENTITY(1,1),
-    DegreeName NVARCHAR(255) NOT NULL,
+    DegreeID SERIAL PRIMARY KEY,
+    DegreeName VARCHAR(255) NOT NULL,
     FacultyID INT NOT NULL,
     FOREIGN KEY (FacultyID) REFERENCES Faculty(FacultyID)
-);
-
--- =========================
--- TopicModule
--- =========================
-CREATE TABLE TopicModule (
-    ModuleID INT PRIMARY KEY IDENTITY(1,1),
-    ModuleName NVARCHAR(255) NOT NULL,
-    ClusterID INT NULL,
-    ModuleHeadID BIGINT NULL
 );
 
 -- =========================
 -- ModuleCluster
 -- =========================
 CREATE TABLE ModuleCluster (
-    ClusterID INT PRIMARY KEY IDENTITY(1,1),
-    ClusterName NVARCHAR(100) NOT NULL
+    ClusterID SERIAL PRIMARY KEY,
+    ClusterName VARCHAR(100) NOT NULL
 );
-
-ALTER TABLE TopicModule
-ADD CONSTRAINT FK_TopicModule_Cluster FOREIGN KEY (ClusterID) REFERENCES ModuleCluster(ClusterID);
 
 -- =========================
 -- Tutors
 -- =========================
 CREATE TABLE Tutors (
-    TutorID BIGINT PRIMARY KEY IDENTITY(1,1),
-    TutorName NVARCHAR(255) NOT NULL,
-    TutorSurname NVARCHAR(255) NOT NULL,
+    TutorID BIGSERIAL PRIMARY KEY,
+    TutorName VARCHAR(255) NOT NULL,
+    TutorSurname VARCHAR(255) NOT NULL,
     SpecialityID INT NULL
 );
 
@@ -48,15 +38,25 @@ CREATE TABLE Tutors (
 -- Speciality
 -- =========================
 CREATE TABLE Speciality (
-    SpecialityID INT PRIMARY KEY IDENTITY(1,1),
-    SpecialityName NVARCHAR(100) NOT NULL
+    SpecialityID SERIAL PRIMARY KEY,
+    SpecialityName VARCHAR(100) NOT NULL
 );
 
 ALTER TABLE Tutors
-ADD CONSTRAINT FK_Tutors_Speciality FOREIGN KEY (SpecialityID) REFERENCES Speciality(SpecialityID);
+ADD CONSTRAINT FK_Tutors_Speciality FOREIGN KEY (SpecialityID)
+REFERENCES Speciality(SpecialityID);
 
-ALTER TABLE TopicModule
-ADD CONSTRAINT FK_TopicModule_Tutor FOREIGN KEY (ModuleHeadID) REFERENCES Tutors(TutorID);
+-- =========================
+-- TopicModule
+-- =========================
+CREATE TABLE TopicModule (
+    ModuleID SERIAL PRIMARY KEY,
+    ModuleName VARCHAR(255) NOT NULL,
+    ClusterID INT NULL,
+    ModuleHeadID BIGINT NULL,
+    FOREIGN KEY (ClusterID) REFERENCES ModuleCluster(ClusterID),
+    FOREIGN KEY (ModuleHeadID) REFERENCES Tutors(TutorID)
+);
 
 -- =========================
 -- DegreeModule (Join Table)
@@ -73,10 +73,10 @@ CREATE TABLE DegreeModule (
 -- ModuleResource
 -- =========================
 CREATE TABLE ModuleResource (
-    ResourceID INT PRIMARY KEY IDENTITY(1,1),
+    ResourceID SERIAL PRIMARY KEY,
     ModuleID INT NOT NULL,
-    ResourceType NVARCHAR(40),
-    ResourceURL NVARCHAR(MAX) NOT NULL,
+    ResourceType VARCHAR(40),
+    ResourceURL TEXT NOT NULL,
     FOREIGN KEY (ModuleID) REFERENCES TopicModule(ModuleID)
 );
 
@@ -84,21 +84,21 @@ CREATE TABLE ModuleResource (
 -- Student
 -- =========================
 CREATE TABLE Student (
-    StudentID BIGINT PRIMARY KEY IDENTITY(1,1),
-    FirstName NVARCHAR(255) NOT NULL,
-    LastName NVARCHAR(255) NOT NULL,
-    PersonalEmail NVARCHAR(255),
-    Phone NVARCHAR(50),
-    PasswordHash NVARCHAR(255) NOT NULL
+    StudentID BIGSERIAL PRIMARY KEY,
+    FirstName VARCHAR(255) NOT NULL,
+    LastName VARCHAR(255) NOT NULL,
+    PersonalEmail VARCHAR(255),
+    Phone VARCHAR(50),
+    PasswordHash VARCHAR(255) NOT NULL
 );
 
 -- =========================
 -- Enrollment
 -- =========================
 CREATE TABLE Enrollment (
-    EnrollmentID BIGINT PRIMARY KEY IDENTITY(1,1),
+    EnrollmentID BIGSERIAL PRIMARY KEY,
     StudentID BIGINT NOT NULL,
-    EnrollmentDate DATETIME NOT NULL,
+    EnrollmentDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (StudentID) REFERENCES Student(StudentID)
 );
 
@@ -117,11 +117,11 @@ CREATE TABLE EnrollmentDegree (
 -- ChatSession
 -- =========================
 CREATE TABLE ChatSession (
-    ChatSessionID BIGINT PRIMARY KEY IDENTITY(1,1),
+    ChatSessionID BIGSERIAL PRIMARY KEY,
     StudentID BIGINT NOT NULL,
-    StartedAt DATETIME NOT NULL DEFAULT GETDATE(),
-    EndedAt DATETIME NULL,
-    Topic NVARCHAR(100),
+    StartedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    EndedAt TIMESTAMP NULL,
+    Topic VARCHAR(100),
     FOREIGN KEY (StudentID) REFERENCES Student(StudentID)
 );
 
@@ -129,33 +129,36 @@ CREATE TABLE ChatSession (
 -- ChatMessages
 -- =========================
 CREATE TABLE ChatMessages (
-    ChatMessageID BIGINT PRIMARY KEY IDENTITY(1,1),
+    ChatMessageID BIGSERIAL PRIMARY KEY,
     ChatSessionID BIGINT NOT NULL,
-    IsFromStudent BIT NOT NULL,
-    MessageText NVARCHAR(MAX) NOT NULL,
-    SentAt DATETIME NOT NULL DEFAULT GETDATE(),
+    IsFromStudent BOOLEAN NOT NULL,
+    MessageText TEXT NOT NULL,
+    SentAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (ChatSessionID) REFERENCES ChatSession(ChatSessionID)
 );
 
 -- =========================
--- ForumTopic + Reply (embedded class)
+-- ForumTopic
 -- =========================
 CREATE TABLE ForumTopic (
-    Id INT PRIMARY KEY IDENTITY(1,1),
-    Title NVARCHAR(255) NOT NULL,
-    Subject NVARCHAR(255) NOT NULL,
-    Description NVARCHAR(MAX) NOT NULL,
+    Id SERIAL PRIMARY KEY,
+    Title VARCHAR(255) NOT NULL,
+    Subject VARCHAR(255) NOT NULL,
+    Description TEXT NOT NULL,
     Contributions INT NOT NULL DEFAULT 0,
-    Progress NVARCHAR(50) NOT NULL DEFAULT 'Fresh',
-    CreatedAt DATETIME NOT NULL DEFAULT GETDATE()
+    Progress VARCHAR(50) NOT NULL DEFAULT 'Fresh',
+    CreatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- =========================
+-- Reply
+-- =========================
 CREATE TABLE Reply (
-    ReplyID INT PRIMARY KEY IDENTITY(1,1),
+    ReplyID SERIAL PRIMARY KEY,
     ForumTopicId INT NOT NULL,
-    Author NVARCHAR(255) NOT NULL,
-    Message NVARCHAR(MAX) NOT NULL,
-    PostedAt DATETIME NOT NULL DEFAULT GETDATE(),
+    Author VARCHAR(255) NOT NULL,
+    Message TEXT NOT NULL,
+    PostedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (ForumTopicId) REFERENCES ForumTopic(Id)
 );
 
@@ -163,15 +166,15 @@ CREATE TABLE Reply (
 -- Session
 -- =========================
 CREATE TABLE Session (
-    SessionID BIGINT PRIMARY KEY IDENTITY(1,1),
-    SessionTopic NVARCHAR(255) NOT NULL
+    SessionID BIGSERIAL PRIMARY KEY,
+    SessionTopic VARCHAR(255) NOT NULL
 );
 
 -- =========================
 -- Rating
 -- =========================
 CREATE TABLE Rating (
-    RatingID BIGINT PRIMARY KEY IDENTITY(1,1),
+    RatingID BIGSERIAL PRIMARY KEY,
     RatingValue SMALLINT NOT NULL
 );
 

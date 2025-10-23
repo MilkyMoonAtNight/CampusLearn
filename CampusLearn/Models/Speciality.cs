@@ -10,6 +10,6 @@ namespace CampusLearn.Models
         [Required, MaxLength(100)]
         public string SpecialityName { get; set; }
 
-        public ICollection<Tutors> Tutors { get; set; }
+        public ICollection<Tutor> Tutors { get; set; }
     }
 }

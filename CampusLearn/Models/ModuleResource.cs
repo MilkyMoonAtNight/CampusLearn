@@ -8,9 +8,8 @@ namespace CampusLearn.Models
         [Key]
         public int ResourceID { get; set; }
 
-        [ForeignKey("TopicModule")]
         public int ModuleID { get; set; }
-        public TopicModule? TopicModule { get; set; }
+        public TopicModule Module { get; set; }
 
         [MaxLength(40)]
         public string? ResourceType { get; set; }

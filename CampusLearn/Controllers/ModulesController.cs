@@ -1,53 +1,45 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using CampusLearn.Models; // Adjust namespace as needed
+﻿using CampusLearn.Data;
+using CampusLearn.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
-public class ModulesController : Controller
+namespace CampusLearn.Controllers
 {
-    // Simulated in-memory module list
-    private static readonly List<TopicModule> _modules = new()
+    public class ModulesController : Controller
     {
-        new TopicModule
+        private readonly CampusLearnContext _context;
+
+        public ModulesController(CampusLearnContext context)
         {
-            ModuleID = 101,
-            ModuleName = "English for Academic Purposes",
-            ClusterID = 1,
-            ModuleCluster = new ModuleCluster { ClusterID = 1, ClusterName = "English" },
-            ModuleHeadID = 1001,
-            ModuleHead = new Tutors { TutorID = 1001, TutorName = "Dr. Sarah Mokoena" }
-        },
-        new TopicModule
-        {
-            ModuleID = 102,
-            ModuleName = "Software Engineering Fundamentals",
-            ClusterID = 2,
-            ModuleCluster = new ModuleCluster { ClusterID = 2, ClusterName = "Technology" },
-            ModuleHeadID = 1002,
-            ModuleHead = new Tutors { TutorID = 1002, TutorName = "Prof. Johan van der Merwe" }
-        },
-        new TopicModule
-        {
-            ModuleID = 103,
-            ModuleName = "Entrepreneurship 181",
-            ClusterID = 3,
-            ModuleCluster = new ModuleCluster { ClusterID = 3, ClusterName = "Business" },
-            ModuleHeadID = 1003,
-            ModuleHead = new Tutors { TutorID = 1003, TutorName = "Ms. Lerato Dlamini" }
+            _context = context;
         }
-    };
 
-    // GET: /Modules
-    public IActionResult Index()
-    {
-        return View(_modules);
-    }
+        // GET: /Modules
+        public async Task<IActionResult> Index()
+        {
+            // Include cluster + tutor so they load with module
+            var modules = await _context.Modules
+                .Include(m => m.ModuleCluster)
+                .Include(m => m.ModuleHead)
+                .Include(m => m.ModuleResources)
+                .ToListAsync();
 
-    // GET: /Modules/Details/{id}
-    public IActionResult Details(int id)
-    {
-        var module = _modules.FirstOrDefault(m => m.ModuleID == id);
-        if (module == null)
-            return NotFound();
+            return View(modules);
+        }
 
-        return View(module);
+        // GET: /Modules/Details/{id}
+        public async Task<IActionResult> Details(int id)
+        {
+            var module = await _context.Modules
+                .Include(m => m.ModuleCluster)
+                .Include(m => m.ModuleHead)
+                .Include(m => m.ModuleResources)
+                .FirstOrDefaultAsync(m => m.ModuleID == id);
+
+            if (module == null)
+                return NotFound();
+
+            return View(module);
+        }
     }
 }

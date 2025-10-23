@@ -67,9 +67,9 @@ INSERT INTO Student (FirstName, LastName, PersonalEmail, Phone, PasswordHash) VA
 -- Enrollment
 -- =========================
 INSERT INTO Enrollment (StudentID, EnrollmentDate) VALUES
-(1, GETDATE()),
-(2, GETDATE()),
-(3, GETDATE());
+(1, CURRENT_TIMESTAMP),
+(2, CURRENT_TIMESTAMP),
+(3, CURRENT_TIMESTAMP);
 
 -- =========================
 -- EnrollmentDegree
@@ -80,25 +80,31 @@ INSERT INTO EnrollmentDegree (EnrollmentID, DegreeID) VALUES
 (3, 3); -- Bob → BEng Software Eng
 
 -- =========================
--- ChatSession + Messages
+-- ChatSession
 -- =========================
 INSERT INTO ChatSession (StudentID, Topic) VALUES
 (1, 'Help with Database Assignment'),
 (2, 'Clarification on Business Project');
 
+-- =========================
+-- ChatMessages
+-- =========================
 INSERT INTO ChatMessages (ChatSessionID, IsFromStudent, MessageText) VALUES
-(1, 1, 'Hi, I need help with SQL joins.'),
-(1, 0, 'Sure, let’s go through an example.'),
-(2, 1, 'Can you explain the project requirements?'),
-(2, 0, 'Yes, I’ll send you the rubric.');
+(1, TRUE, 'Hi, I need help with SQL joins.'),
+(1, FALSE, 'Sure, let’s go through an example.'),
+(2, TRUE, 'Can you explain the project requirements?'),
+(2, FALSE, 'Yes, I’ll send you the rubric.');
 
 -- =========================
--- ForumTopic + Replies
+-- ForumTopic
 -- =========================
 INSERT INTO ForumTopic (Title, Subject, Description) VALUES
 ('Best Practices in Programming', 'Coding Standards', 'Share your coding tips here'),
 ('AI in Education', 'Machine Learning', 'Discuss how AI is shaping learning');
 
+-- =========================
+-- Reply
+-- =========================
 INSERT INTO Reply (ForumTopicId, Author, Message) VALUES
 (1, 'Kevin', 'Always comment your code!'),
 (1, 'Alice', 'Use meaningful variable names.'),
@@ -118,14 +124,20 @@ INSERT INTO Rating (RatingValue) VALUES
 (1), (2), (3), (4), (5);
 
 -- =========================
--- SessionTutor / SessionStudent / SessionRating
+-- SessionTutor
 -- =========================
 INSERT INTO SessionTutor (SessionID, TutorID) VALUES
 (1, 2), (2, 3);
 
+-- =========================
+-- SessionStudent
+-- =========================
 INSERT INTO SessionStudent (SessionID, StudentID) VALUES
 (1, 1), (1, 2), (2, 3);
 
+-- =========================
+-- SessionRating
+-- =========================
 INSERT INTO SessionRating (SessionID, RatingID) VALUES
 (1, 5), (2, 4);
 
@@ -134,6 +146,3 @@ INSERT INTO SessionRating (SessionID, RatingID) VALUES
 -- =========================
 INSERT INTO StudentTutor (StudentID, TutorID) VALUES
 (1, 1), (2, 2), (3, 3);
-
-ALTER TABLE Session
-ALTER COLUMN SessionStart SET DEFAULT NOW();

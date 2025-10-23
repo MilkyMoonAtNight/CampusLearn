@@ -9,6 +9,6 @@ namespace CampusLearn.Models
         public Student Student { get; set; }
 
         public long TutorID { get; set; }
-        public Tutors Tutor { get; set; }
+        public Tutor Tutor { get; set; }
     }
 }

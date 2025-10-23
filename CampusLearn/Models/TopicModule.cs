@@ -15,13 +15,13 @@ namespace CampusLearn.Models
         [Required, MaxLength(255)]
         public string ModuleName { get; set; }
 
-        [ForeignKey("ModuleCluster")]
         public int? ClusterID { get; set; }
         public ModuleCluster? ModuleCluster { get; set; }
 
-        [ForeignKey("ModuleHead")]
         public long? ModuleHeadID { get; set; }
-        public Tutors? ModuleHead { get; set; }
+        public Tutor? ModuleHead { get; set; }
+
+        
 
         public ICollection<DegreeModule>? DegreeModules { get; set; }
         public ICollection<ModuleResource>? ModuleResources { get; set; }

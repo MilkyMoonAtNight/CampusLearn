@@ -11,7 +11,6 @@ namespace CampusLearn.Models
         [Required]
         public long ChatSessionID { get; set; }
 
-        [ForeignKey(nameof(ChatSessionID))]
         public ChatSession ChatSession { get; set; }
 
         [Required]
@@ -21,5 +20,7 @@ namespace CampusLearn.Models
         public string MessageText { get; set; }
 
         public DateTime SentAt { get; set; } = DateTime.Now;
+
+        
     }
 }

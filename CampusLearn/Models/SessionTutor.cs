@@ -8,6 +8,6 @@ namespace CampusLearn.Models
         public Session Session { get; set; }
 
         public long TutorID { get; set; }
-        public Tutors Tutor { get; set; }
+        public Tutor Tutor { get; set; }
     }
 }
