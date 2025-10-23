@@ -4,38 +4,42 @@
 }
 
 <div class="ai-chat">
+    <!-- Contact Selector -->
+    <aside class="ai-chat__sidebar">
+        <h3>Contacts</h3>
+        <ul class="contact-list">
+            @foreach (var user in Model.AllUsers.GroupBy(u => u.Groups.FirstOrDefault()))
+            {
+                <li class="contact-group">@user.Key</li>
+                foreach (var contact in user)
+                {
+                    var isActive = contact.Username == Model.SelectedRecipient ? "active" : "";
+                    <li class="contact-item @isActive">
+                        <a asp-action="Index" asp-route-recipient="@contact.Username">@contact.FullName</a>
+                    </li>
+                }
+            }
+        </ul>
+    </aside>
+
     <!-- Message Display Area -->
     <div class="ai-chat__messages">
         @foreach (var msg in Model.Messages)
         {
             var alignmentClass = msg.IsUser ? "ai-msg--user" : "ai-msg--ai";
             <div class="ai-msg @alignmentClass">
-                <div class="ai-msg__bubble">
-                    @msg.Content
-                </div>
-                <div class="ai-msg__meta">
-                    @msg.SenderName • @msg.Timestamp.ToString("HH:mm dd MMM")
-                </div>
+                <div class="ai-msg__bubble">@msg.Content</div>
+                <div class="ai-msg__meta">@msg.SenderName • @msg.Timestamp.ToString("HH:mm dd MMM")</div>
             </div>
         }
     </div>
 
     <!-- Message Composer -->
     <form asp-action="SendMessage" method="post" class="ai-chat__composer">
+        <input type="hidden" name="recipient" value="@Model.SelectedRecipient" />
         <div class="input-group">
-            <input type="text" name="MessageText" class="form-control ai-chat__input" placeholder="Type your message..." required />
-            <button type="submit" class="ai-chat__send">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M15.854 7.646a.5.5 0 0 0 0-.707l-6-6a.5.5 0 0 0-.707.707L14.293 7H1.5a.5.5 0 0 0 0 1h12.793l-5.146 5.146a.5.5 0 0 0 .707.707l6-6z" />
-                </svg>
-                Send
-            </button>
+            <input type="text" name="messageText" class="form-control ai-chat__input" placeholder="Type your message..." required />
+            <button type="submit" class="ai-chat__send">Send</button>
         </div>
     </form>
-    @section Scripts {
-        @{
-            await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        }
-    }
-
 </div>
