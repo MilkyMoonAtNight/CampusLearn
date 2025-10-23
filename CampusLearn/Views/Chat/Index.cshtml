@@ -84,18 +84,22 @@
                 var completion = new Random().Next(10, 90);
                 var weeksRemaining = new Random().Next(1, 8);
 
-                <a asp-controller="Modules" asp-action="Details" asp-route-id="@module.ModuleID" style="text-decoration:none; color:inherit;">
-                    <div class="module-card">
+                <div class="module-card">
+                    <a asp-controller="Modules" asp-action="Details" asp-route-id="@module.ModuleID" style="text-decoration:none; color:inherit;">
                         <img src="@imagePath" alt="@module.ModuleName" class="module-image" />
                         <div class="module-content">
                             <div class="module-title">@module.ModuleName</div>
                             <div class="module-info"><strong>Instructor:</strong> @module.ModuleHead?.TutorName ?? "TBA"</div>
                             <div class="module-info"><strong>Weeks Remaining:</strong> @weeksRemaining</div>
                             <div class="module-info"><strong>Completion:</strong> @completion%</div>
-                            <button class="download-btn">Download Offline</button>
                         </div>
-                    </div>
-                </a>
+                    </a>
+                    <a asp-controller="Modules" asp-action="Download"
+                       asp-route-id="@module.ModuleID"
+                       class="btn btn-primary download-btn">
+                        Download Offline
+                    </a>
+                </div>
             }
         </div>
     }
