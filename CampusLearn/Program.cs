@@ -1,21 +1,30 @@
 using CampusLearn.Data;
-
 using CampusLearn.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// -------------------- Service Configuration --------------------
 
-builder.Services.AddControllersWithViews(); // For API controllers
-builder.Services.AddSession();
+// MVC with views
+builder.Services.AddControllersWithViews();
 
-builder.Services.AddDbContext<CampusLearnContext>(
-    options => options.UseNpgsql(builder.Configuration.GetConnectionString("CampusLearnDb"))
+// Session configuration
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30); // Adjust as needed
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+// Database context (PostgreSQL via Npgsql)
+builder.Services.AddDbContext<CampusLearnContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("CampusLearnDb"))
 );
+
+// Swagger for API documentation (dev only)
 builder.Services.AddEndpointsApiExplorer();
-
-
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
@@ -26,18 +35,20 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+// Custom services
 builder.Services.AddSingleton<IAnnouncementsStore, AnnouncementsStore>();
 
 var app = builder.Build();
 
-// Middleware pipeline
+// -------------------- Middleware Pipeline --------------------
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "CampusLearn API v1");
-        //c.RoutePrefix = ""; // Swagger at root URL (https://localhost:5001/)
+        // c.RoutePrefix = ""; // Uncomment to serve Swagger at root
     });
 }
 else
@@ -50,23 +61,23 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// Optional: Add authentication if using Identity or cookies
+// app.UseAuthentication();
+
 app.UseSession();
 app.UseAuthorization();
 
-// Map API controllers (needed for Swagger endpoints to work)
+// -------------------- Routing --------------------
+
+// API endpoints
 app.MapControllers();
 
-// Map MVC default route (for views if needed)
+// MVC default route
 app.MapControllerRoute(
-  name: "default",
-
-  pattern: "{controller=LogIn}/{action=Index}/{id?}"
-  );
-
-  
-
-
-
+    name: "default",
+    pattern: "{controller=LogIn}/{action=Index}/{id?}"
+);
 
 app.Run();
 

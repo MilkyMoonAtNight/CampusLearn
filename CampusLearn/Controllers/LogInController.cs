@@ -54,7 +54,7 @@ namespace CampusLearn.Controllers
             HttpContext.Session.SetString("Email", user.Email ?? string.Empty);
 
             // ✅ Redirect to messaging or dashboard
-            return RedirectToAction("Index", "Chat"); // or "Dashboard"
+            return RedirectToAction("Index", "Dashboard"); // or "Dashboard"
         }
 
         [HttpGet]
