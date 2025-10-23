@@ -36,10 +36,9 @@ namespace CampusLearn.Controllers
                 return View();
             }
 
-            // Allow login by username or email
             var user = UserStore.Users
-                .FirstOrDefault(u => string.Equals(u.Username, username, System.StringComparison.OrdinalIgnoreCase)
-                                  || string.Equals(u.Email, username, System.StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(u => string.Equals(u.Username, username, StringComparison.OrdinalIgnoreCase)
+                                  || string.Equals(u.Email, username, StringComparison.OrdinalIgnoreCase));
 
             if (user is null || user.Password != password)
             {
@@ -47,12 +46,15 @@ namespace CampusLearn.Controllers
                 return View();
             }
 
-            // Store minimal session info
-            HttpContext.Session.SetString("Username", user.Username);
+            // ✅ Set session key for messaging
+            HttpContext.Session.SetString("LoggedInUser", user.Username);
+
+            // Optional: also store other info
             HttpContext.Session.SetString("FullName", user.FullName);
             HttpContext.Session.SetString("Email", user.Email ?? string.Empty);
 
-            return RedirectToAction("Index", "LogIn");
+            // ✅ Redirect to messaging or dashboard
+            return RedirectToAction("Index", "Chat"); // or "Dashboard"
         }
 
         [HttpGet]
