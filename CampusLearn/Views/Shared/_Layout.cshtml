@@ -389,13 +389,14 @@
         </div>
     </div>
     @await Html.PartialAsync("_ChatPopup", new CampusLearn.Models.MessageView {
-    Messages = new List<CampusLearn.Models.Message> {
-        new CampusLearn.Models.Message {
-        SenderName = "Teacher",
-        Content = "Welcome to CampusLearn!",
-        Timestamp = DateTime.Now,
-        IsUser = false
-        }}})
+    Messages = new List<CampusLearn.Models.Message>
+    {
+    new CampusLearn.Models.Message {
+    SenderName = "Teacher",
+    Content = "Welcome to CampusLearn!",
+    Timestamp = DateTime.Now,
+    IsUser = false
+    }}})
     <button onclick="toggleChat()" class="chat-toggle-btn">💬 Chat</button>
 
     <script>
@@ -414,6 +415,8 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

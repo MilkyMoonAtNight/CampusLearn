@@ -168,7 +168,7 @@
 
         <form asp-action="Index" method="post" class="login-form" novalidate>
             @Html.AntiForgeryToken()
-            <input class="input" type="text" name="username" placeholder="Username" required autocomplete="username" />
+            <input class="input" type="email" name="email" placeholder="Email" required autocomplete="email" />
             <input class="input" type="password" name="password" placeholder="Password" required autocomplete="current-password" />
             <button type="submit" class="btn-login">Sign in</button>
         </form>
