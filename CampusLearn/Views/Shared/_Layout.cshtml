@@ -399,7 +399,46 @@
     }}})
     <button onclick="toggleChat()" class="chat-toggle-btn">💬 Chat</button>
 
+
+    <!-- Floating Chat Bubble -->
+    <div id="chatBubble"
+         style="position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px;
+            border-radius: 50%; background-color: #007bff; color: white;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000;">
+        💬
+    </div>
+
+    <!-- Chat Sidebar -->
+    <div id="chatSidebar"
+         style="position: fixed; top: 0; right: -400px; width: 400px; height: 100%;
+            background: white; box-shadow: -2px 0 8px rgba(0,0,0,0.3);
+            transition: right 0.3s ease; z-index: 4000;">
+        <div style="display: flex; justify-content: space-between; align-items: center;
+                padding: 10px; background-color: #007bff; color: white;">
+            <h5 class="m-0">AI Chat</h5>
+            <button id="closeChat" style="background: none; border: none; color: white; font-size: 20px;">×</button>
+        </div>
+        <div style="height: calc(100% - 50px); overflow-y: auto; padding: 10px;">
+            @Html.Partial("~/Views/AIChat/Chat.cshtml")
+        </div>
+    </div>
+
+
     <script>
+
+        const chatBubble = document.getElementById("chatBubble");
+        const chatSidebar = document.getElementById("chatSidebar");
+        const closeChat = document.getElementById("closeChat");
+
+        chatBubble.addEventListener("click", () => {
+            chatSidebar.style.right = "0";
+        });
+
+        closeChat.addEventListener("click", () => {
+            chatSidebar.style.right = "-400px";
+        });
+
         function toggleChat() {
             const popup = document.getElementById('chatPopup');
             popup.classList.toggle('hidden');
