@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CampusLearn.Models
 {
-    public class ChatMessages
+    public class ChatMessage
     {
         [Key]
         public long ChatMessageID { get; set; }

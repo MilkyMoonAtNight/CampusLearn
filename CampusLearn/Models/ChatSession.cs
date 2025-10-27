@@ -20,6 +20,6 @@ namespace CampusLearn.Models
 
         // Navigation properties
         public Student Student { get; set; }
-        public ICollection<ChatMessages> Messages { get; set; }
+        public ICollection<ChatMessage> Messages { get; set; }
     }
 }

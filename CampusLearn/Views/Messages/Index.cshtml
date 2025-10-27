@@ -1,45 +1,83 @@
 ﻿@model CampusLearn.Models.MessageView
-@{
-    ViewData["Title"] = "Messages";
-}
 
-<div class="ai-chat">
-    <!-- Contact Selector -->
-    <aside class="ai-chat__sidebar">
-        <h3>Contacts</h3>
-        <ul class="contact-list">
-            @foreach (var user in Model.AllUsers.GroupBy(u => u.Groups.FirstOrDefault()))
-            {
-                <li class="contact-group">@user.Key</li>
-                foreach (var contact in user)
-                {
-                    var isActive = contact.Username == Model.SelectedRecipient ? "active" : "";
-                    <li class="contact-item @isActive">
-                        <a asp-action="Index" asp-route-recipient="@contact.Username">@contact.FullName</a>
-                    </li>
-                }
-            }
-        </ul>
-    </aside>
+<div class="chat-container">
+    <h2>Conversation with @Model.AllUsers.FirstOrDefault(u => u.ID == Model.SelectedRecipientID)?.FirstName</h2>
 
-    <!-- Message Display Area -->
-    <div class="ai-chat__messages">
-        @foreach (var msg in Model.Messages)
+    <div class="chat-thread">
+        @if (Model.Messages == null || !Model.Messages.Any())
         {
-            var alignmentClass = msg.IsUser ? "ai-msg--user" : "ai-msg--ai";
-            <div class="ai-msg @alignmentClass">
-                <div class="ai-msg__bubble">@msg.Content</div>
-                <div class="ai-msg__meta">@msg.SenderName • @msg.Timestamp.ToString("HH:mm dd MMM")</div>
-            </div>
+            <p>No messages yet. Start the conversation!</p>
+        }
+        else
+        {
+            foreach (var message in Model.Messages)
+            {
+                var isSentByCurrentUser = message.SenderID == Model.CurrentUserID;
+                <div class="chat-bubble @(isSentByCurrentUser ? "sent" : "received")">
+                    <div class="chat-meta">
+                        <strong>@(isSentByCurrentUser ? "You" : Model.AllUsers.FirstOrDefault(u => u.ID == message.SenderID)?.FirstName)</strong>
+                        <span class="timestamp">@message.Timestamp.ToString("g")</span>
+                    </div>
+                    <div class="chat-text">@message.Content</div>
+                </div>
+            }
         }
     </div>
 
-    <!-- Message Composer -->
-    <form asp-action="SendMessage" method="post" class="ai-chat__composer">
-        <input type="hidden" name="recipient" value="@Model.SelectedRecipient" />
-        <div class="input-group">
-            <input type="text" name="messageText" class="form-control ai-chat__input" placeholder="Type your message..." required />
-            <button type="submit" class="ai-chat__send">Send</button>
-        </div>
+    <form asp-action="SendMessage" method="post" class="chat-form">
+        <input type="hidden" name="recipientId" value="@Model.SelectedRecipientID" />
+        <textarea name="messageText" rows="3" placeholder="Type your message..." required></textarea>
+        <button type="submit" class="btn btn-primary">Send</button>
     </form>
 </div>
+
+<style>
+    .chat-container {
+        max-width: 700px;
+        margin: auto;
+        padding: 20px;
+    }
+
+    .chat-thread {
+        border: 1px solid #ccc;
+        padding: 15px;
+        margin-bottom: 20px;
+        max-height: 400px;
+        overflow-y: auto;
+        background-color: #f9f9f9;
+    }
+
+    .chat-bubble {
+        margin-bottom: 15px;
+        padding: 10px;
+        border-radius: 10px;
+        max-width: 80%;
+    }
+
+    .sent {
+        background-color: #d1e7dd;
+        align-self: flex-end;
+        margin-left: auto;
+    }
+
+    .received {
+        background-color: #f8d7da;
+        align-self: flex-start;
+        margin-right: auto;
+    }
+
+    .chat-meta {
+        font-size: 0.9em;
+        color: #555;
+        margin-bottom: 5px;
+    }
+
+    .chat-text {
+        font-size: 1em;
+    }
+
+    .chat-form textarea {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+</style>

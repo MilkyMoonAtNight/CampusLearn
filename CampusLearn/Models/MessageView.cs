@@ -1,59 +1,23 @@
-﻿using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
-using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
 
 namespace CampusLearn.Models
 {
+    public class MessageUser
+    {
+        public long ID { get; set; } // StudentID, TeacherID, or TutorID
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Role { get; set; } 
+    }
+
     public class MessageView
     {
-        public string CurrentUser { get; set; }
-        public string SelectedRecipient { get; set; }
-        public List<User> AllUsers { get; set; }
+        public int CurrentUserID { get; set; }
+        public int SelectedRecipientID { get; set; }
+
+        public List<MessageUser> AllUsers { get; set; } // Or List<Tutor> if tutors are messaging
         public List<Message> Messages { get; set; }
+        public string SearchQuery { get; set; }
+        public string RoleFilter { get; set; }
     }
-
-    public class Message
-    {
-        [Required(ErrorMessage = "Sender name is required.")]
-        [StringLength(50, ErrorMessage = "Sender name cannot exceed 50 characters.")]
-        public string SenderName { get; set; }
-
-        [Required(ErrorMessage = "Recipient name is required.")]
-        [StringLength(50, ErrorMessage = "Recipient name cannot exceed 50 characters.")]
-        public string RecipientName { get; set; }
-
-        [Required(ErrorMessage = "Message content cannot be empty.")]
-        [StringLength(1000, ErrorMessage = "Message content is too long.")]
-        public string Content { get; set; }
-
-        [DataType(DataType.DateTime)]
-        public DateTime Timestamp { get; set; } = DateTime.Now;
-
-        public bool IsUser { get; set; }
-
-        private static readonly List<Message> _messages = new();
-
-
-        // Get conversation between two users
-        public static List<Message> GetConversation(string userA, string userB)
-        {
-            return _messages
-                .Where(m => (m.SenderName == userA && m.RecipientName == userB) ||
-                            (m.SenderName == userB && m.RecipientName == userA))
-                .OrderBy(m => m.Timestamp)
-                .ToList();
-        }
-        public static void SaveMessage(string senderName, string recipientName, string content, bool isUser)
-        {
-            _messages.Add(new Message
-            {
-                SenderName = senderName,
-                RecipientName = recipientName,
-                Content = content,
-                Timestamp = DateTime.Now,
-                IsUser = isUser
-            });
-        }
-
-    }
-
 }

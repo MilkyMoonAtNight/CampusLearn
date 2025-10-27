@@ -30,17 +30,17 @@ namespace CampusLearn.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(string email, string password)
         {
-            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))//checking if fields are empty
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
             {
                 ViewBag.Error = "Please enter username and password.";
                 return View();
             }
-            //Encode Password to match Reg
+
             var encodedPassword = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(password));
             encodedPassword = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(encodedPassword));
-            //changed from UserStore 
+
             var user = await _context.Students
-                .FirstOrDefaultAsync(u =>  u.PersonalEmail == email);
+                .FirstOrDefaultAsync(u => u.PersonalEmail == email);
 
             if (user == null || user.PasswordHash != encodedPassword)
             {
@@ -48,15 +48,12 @@ namespace CampusLearn.Controllers
                 return View();
             }
 
-            // ✅ Set session key for messaging
+            HttpContext.Session.SetInt32("LoggedInUserID", (int)user.StudentID);
             HttpContext.Session.SetString("LoggedInUser", user.PersonalEmail);
-
-            // Optional: also store other info
             HttpContext.Session.SetString("FirstName", user.FirstName);
             HttpContext.Session.SetString("Email", user.PersonalEmail ?? string.Empty);
 
-            // ✅ Redirect to messaging or dashboard
-            return RedirectToAction("Index", "Dashboard"); // or "Dashboard"
+            return RedirectToAction("Index", "Dashboard");
         }
 
 

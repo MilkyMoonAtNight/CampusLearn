@@ -16,7 +16,7 @@ namespace CampusLearn.Data
         public DbSet<Speciality> Specialities { get; set; }
         public DbSet<Enrollment> Enrollments { get; set; }
         public DbSet<ChatSession> ChatSessions { get; set; }
-        public DbSet<ChatMessages> ChatMessages { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<ForumTopic> ForumTopics { get; set; }
         public DbSet<Reply> Replies { get; set; }
         public DbSet<Session> Sessions { get; set; }
@@ -159,7 +159,7 @@ namespace CampusLearn.Data
                       .HasForeignKey(cs => cs.StudentID);
             });
 
-            modelBuilder.Entity<ChatMessages>(entity =>
+            modelBuilder.Entity<ChatMessage>(entity =>
             {
                 entity.ToTable("chatmessages");
                 entity.HasKey(e => e.ChatMessageID);
