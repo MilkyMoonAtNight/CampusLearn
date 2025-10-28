@@ -54,14 +54,14 @@
 </style>
 
 <h2 class="mb-4">Chat with @Model.TargetUser.FirstName</h2>
-<div class="chat-thread border rounded p-3 mb-4" style="max-height: 500px; overflow-y: auto;">
+<div id="chatThread" class="chat-thread border rounded p-3 mb-4" style="max-height: 500px; overflow-y: auto;">
     @foreach (var msg in Model.Messages)
     {
         var isSent = msg.IsFromStudent;
         <div class="d-flex mb-3 @(isSent ? "justify-content-end" : "justify-content-start")">
-            <div class="chat-bubble p-2 rounded @(isSent ? "bg-primary text-white" : "bg-light text-dark")" style="max-width: 70%;">
+            <div class="chat-bubble @(isSent ? "sent" : "received")">
                 <div class="chat-meta small text-muted">@msg.SentAt.ToString("g")</div>
-                <div class="chat-text">@msg.MessageText</div>
+                <div class="chat-text">@Html.Raw(Html.Encode(msg.MessageText))</div>
             </div>
         </div>
     }
@@ -69,11 +69,13 @@
 
 <form id="chatForm">
     @Html.AntiForgeryToken()
-    <textarea name="messageText" rows="3" placeholder="Type your message..." required></textarea>
+    <textarea name="messageText" rows="3" placeholder="Type your message..." required autocomplete="off"></textarea>
     <input type="hidden" name="sessionId" value="@Model.ChatSessionID" />
     <button type="submit" class="btn btn-primary">Send</button>
 </form>
 <script>
+    const thread = document.getElementById('chatThread');
+
         function escapeHtml(text) {
         const div = document.createElement('div');
         div.innerText = text;
@@ -102,7 +104,7 @@
             return response.text();
         })
     .then(() => {
-        const message = form.messageText.value; // ✅ capture first
+        const message = form.messageText.value; 
         form.messageText.value = "";
 
         const thread = document.querySelector('.chat-thread');

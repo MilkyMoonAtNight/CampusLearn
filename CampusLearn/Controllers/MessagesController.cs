@@ -102,13 +102,20 @@ namespace CampusLearn.Controllers
 
             return View("Index", model);
         }
-        private long ExtractTutorIdFromTopic(string topic)
+        private long ResolveOtherUserId(string topic, long currentUserId)
         {
-            if (topic.StartsWith("ChatWith:") && long.TryParse(topic.Substring(9), out var id))
-                return id;
+            if (topic.StartsWith("ChatBetween:"))
+            {
+                var parts = topic.Substring("ChatBetween:".Length).Split(':');
+                if (parts.Length == 2 &&
+                    long.TryParse(parts[0], out var id1) &&
+                    long.TryParse(parts[1], out var id2))
+                {
+                    return currentUserId == id1 ? id2 : id1;
+                }
+            }
             throw new Exception("Invalid topic format");
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SendMessage(long sessionId, string messageText)
@@ -120,16 +127,13 @@ namespace CampusLearn.Controllers
             if (session == null)
                 return NotFound();
 
-            var tutorId = ExtractTutorIdFromTopic(session.Topic);
-
             var currentUserId = HttpContext.Session.GetInt32("LoggedInUserID");
             if (!currentUserId.HasValue)
                 return RedirectToAction("Index", "LogIn");
 
             if (string.IsNullOrWhiteSpace(messageText))
             {
-                ModelState.AddModelError("messageText", "Message cannot be empty.");
-                return RedirectToAction("ChatWith", new { id = tutorId }); // ✅ correct redirect
+                return RedirectToAction("ChatWith", new { id = ResolveOtherUserId(session.Topic, currentUserId.Value) });
             }
 
             var message = new ChatMessage
@@ -144,10 +148,9 @@ namespace CampusLearn.Controllers
             await _context.SaveChangesAsync();
 
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                return Ok(); // or return Json(new { success = true });
+                return Ok();
 
-            return RedirectToAction("ChatWith", new { id = tutorId });
-
+            return RedirectToAction("ChatWith", new { id = ResolveOtherUserId(session.Topic, currentUserId.Value) });
         }
         private long GetCurrentStudentId()
         {
@@ -185,18 +188,20 @@ namespace CampusLearn.Controllers
 
             return View(viewModel);
         }
-        private ChatSession GetOrCreateChatSession(long studentId, long tutorId)
+        private ChatSession GetOrCreateChatSession(long userAId, long userBId)
         {
+            var normalizedTopic = $"ChatBetween:{Math.Min(userAId, userBId)}:{Math.Max(userAId, userBId)}";
+
             var session = _context.ChatSessions
                 .Include(cs => cs.Messages)
-                .FirstOrDefault(cs => cs.StudentID == studentId && cs.Topic == $"ChatWith:{tutorId}");
+                .FirstOrDefault(cs => cs.Topic == normalizedTopic);
 
             if (session == null)
             {
                 session = new ChatSession
                 {
-                    StudentID = studentId,
-                    Topic = $"ChatWith:{tutorId}",
+                    StudentID = userAId, // or InitiatorID if you refactor later
+                    Topic = normalizedTopic,
                     StartedAt = DateTime.UtcNow
                 };
                 _context.ChatSessions.Add(session);
