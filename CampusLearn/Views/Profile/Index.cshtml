@@ -1,108 +1,193 @@
-﻿@model CampusLearn.Models.User
+﻿@model CampusLearn.Models.Student
 @{
     ViewData["Title"] = "Profile";
 }
 <style>
-.profile-container {
-    max-width: 800px;
-    margin: auto;
-    padding: 20px;
-    background: linear-gradient(to bottom, #3a7bd5, #00d2ff);
-    color: white;
-    border-radius: 10px;
-}
+    .profile-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px;
+        padding: 30px;
+        max-width: 1000px;
+        margin: auto;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.05);
+    }
 
-.profile-header {
-    text-align: center;
-    margin-bottom: 30px;
-}
+    .profile-sidebar {
+        flex: 1 1 250px;
+        text-align: center;
+        border-right: 1px solid #eee;
+        padding-right: 20px;
+    }
 
-.avatar img {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-}
+    .profile-avatar img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 50%;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
 
-.last-access {
-    font-style: italic;
-}
+    .profile-basic h3 {
+        margin-bottom: 5px;
+        font-size: 1.5em;
+    }
 
-.profile-actions {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-    margin-bottom: 30px;
-}
+    .profile-details {
+        flex: 2 1 600px;
+        padding-left: 20px;
+    }
 
-.action-box {
-    background-color: white;
-    color: #333;
-    text-align: center;
-    padding: 20px;
-    border-radius: 10px;
-}
+        .profile-details th {
+            width: 150px;
+            color: #555;
+        }
 
-.about-me {
-    background-color: white;
-    color: #333;
-    padding: 20px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-}
+        .profile-details td {
+            font-weight: 500;
+        }
 
-.btn-logout {
-    background-color: purple;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-}
+    .badge {
+        font-size: 0.9em;
+        padding: 6px 10px;
+        border-radius: 12px;
+    }
+
+    .bg-info {
+        background-color: #17a2b8 !important; 
+        color: #fff;
+    }
+
+    .badge:hover {
+        background-color: #138496;
+        cursor: pointer;
+    }
+
+    .vr {
+        display: inline-block;
+        background-color: #333;
+        width: 4px;
+        height: 50px;
+    }
+
+    .btn-outline-danger {
+        border-color: #dc3545;
+        color: #dc3545;
+        transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+        .btn-outline-danger:hover {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+    button.btn-sm img {
+        margin-right: 6px;
+        vertical-align: middle;
+    }
 
 </style>
 
 <div class="profile-container">
-    <!-- Top Section -->
-    <div class="profile-header">
-        <div class="avatar">
-            <img src="~/images/user.svg" alt="User Avatar" />
+    <!-- Left Side: Basic Info -->
+    <div class="profile-sidebar">
+        <div class="profile-avatar">
+            <img src="~/images/10619319.png" alt="Profile Picture" />
         </div>
-        <h2>@Model.FullName</h2>
-        <p class="last-access">Last access: @Model.LastAccess.ToString("dddd, d MMMM yyyy")</p>
-    </div>
-
-    <!-- Middle Section: Quadrants -->
-    <div class="profile-actions">
-        <div class="action-box">
-            <img src="~/images/address-book.svg" alt="Contacts" />
-            <span>Contacts</span>
-        </div>
-        <div class="action-box">
-            <a class="nav-link text-dark" asp-controller="Forums" asp-action="Index"><img src="~/images/browsers.svg" alt="Forums" /></a>
-            <span>Forums</span>
-        </div>
-        <div class="action-box">
-            <img src="~/images/seal.svg" alt="Badges" />
-            <span>Badges</span>
-        </div>
-        <div class="action-box">
-            <a href="www.linkedin.com/home/?originalSubdomain=za"><img src="~/images/linkedin-logo.svg" alt="LinkedIn" /></a>
-            <span>LinkedIn</span>
+        <div class="profile-basic">
+            <h3>@Model.FirstName @Model.LastName</h3>
+            <span class="badge bg-primary">STUDENT</span>
         </div>
     </div>
 
-    <!-- Bottom Section: About Me -->
-    <div class="about-me">
-        <h3>About Me</h3>
-        <p><strong>First Name:</strong> @Model.FirstName</p>
-        <p><strong>M. Initial:</strong> @Model.MiddleInitial</p>
-        <p><strong>Last Name:</strong> @Model.LastName</p>
-        <p><strong>Email Address:</strong> @Model.Email</p>
-        <p><strong>Phone:</strong> @Model.Phone</p>
-        <p><strong>Groups:</strong> @string.Join(", ", Model.Groups)</p>
+    <!-- Right Side: Details -->
+    <div class="profile-details">
+        <table class="table table-borderless">
+            <tbody>
+                <tr>
+                    <th scope="row">Student ID</th>
+                    <td>@Model.StudentID</td>
+                </tr>
+                <tr>
+                    <th scope="row">Email</th>
+                    <td>@Model.PersonalEmail</td>
+                </tr>
+                <tr>
+                    <th scope="row">Phone</th>
+                    <td>@Model.Phone</td>
+                </tr>
+                <tr>
+                    <th scope="row">Groups</th>
+                    <td>
+                        @foreach (var group in Model.Groups)
+                        {
+                            <span class="badge bg-info me-1">@group</span>
+                        }
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="container-fluid mt-4">
+        <div class="d-flex justify-content-around align-items-center border-top pt-4" style="max-width: 100%;">
+
+            <!-- Badge -->
+            <div class="text-center">
+                <a href="#">
+                    <img src="~/images/seal.svg" alt="Alternate Text" />
+                    <div class="mt-2">Badges</div>
+                </a>
+            </div>
+
+            <!-- Separator -->
+            <div class="vr mx-3" style="height: 50px; width: 4px; background-color: #333;"></div>
+
+            <!-- Messages -->
+            <div class="text-center">
+                <div class="mt-2">
+                    <form method="get" asp-action="Index">
+                        <img src="~/images/chat.svg" alt="Alternate Text" />
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Go to Messages</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Separator -->
+            <div class="vr mx-3" style="height: 50px; width: 4px; background-color: #333;"></div>
+
+            <!-- LinkedIn -->
+            <div class="text-center">
+                <a href="www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwiPmveni8eQAxWRTUEAHY7mGKoQFnoECAwQAQ&url=https%3A%2F%2Fza.linkedin.com%2F&usg=AOvVaw1hOvOUO28YDap1dJ0ScTya&opi=89978449">
+                   <img src="~/images/linkedin-logo.svg" alt="Alternate Text" />
+                    <div class="mt-2">LinkedIn</div>
+               </a>
+            </div>
+
+            <!-- Separator -->
+            <div class="vr mx-3" style="height: 50px; width: 4px; background-color: #333;"></div>
+
+            <!-- Insights -->
+            <div class="text-center">
+                <form method="get" asp-action="Index">
+                    <img src="~/images/lightbulb-filament.svg" alt="Alternate Text" />
+                    <button type="submit" class="btn btn-sm btn-outline-primary">Go to AI</button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+    <!-- Logout Section -->
+    <div class="text-center mt-4">
+        <form method="post" asp-action="Logout" asp-controller="Profile" class="d-inline-block">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center justify-content-center gap-2">
+                <img src="~/images/sign-out.svg" alt="Log Out Icon" style="height: 20px;" />
+                Log Out
+            </button>
+        </form>
     </div>
 
-    <!-- Logout Button -->
-    <form asp-action="Logout" method="post">
-        <button type="submit" class="btn-logout">Log out</button>
-    </form>
 </div>

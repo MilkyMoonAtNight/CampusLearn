@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CampusLearn.Models
 {
-    public class ChatMessages
+    public class ChatMessage
     {
         [Key]
         public long ChatMessageID { get; set; }
@@ -19,7 +19,7 @@ namespace CampusLearn.Models
         [Required]
         public string MessageText { get; set; }
 
-        public DateTime SentAt { get; set; } = DateTime.Now;
+        public DateTime SentAt { get; set; } = DateTime.UtcNow;
 
         
     }

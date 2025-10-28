@@ -1,45 +1,127 @@
 ﻿@model CampusLearn.Models.MessageView
 @{
-    ViewData["Title"] = "Messages";
+    ViewData["Title"] = "User Directory";
+    var isStudentView = ViewData["IsStudentView"] as bool? ?? true;
 }
 
-<div class="ai-chat">
-    <!-- Contact Selector -->
-    <aside class="ai-chat__sidebar">
-        <h3>Contacts</h3>
-        <ul class="contact-list">
-            @foreach (var user in Model.AllUsers.GroupBy(u => u.Groups.FirstOrDefault()))
-            {
-                <li class="contact-group">@user.Key</li>
-                foreach (var contact in user)
-                {
-                    var isActive = contact.Username == Model.SelectedRecipient ? "active" : "";
-                    <li class="contact-item @isActive">
-                        <a asp-action="Index" asp-route-recipient="@contact.Username">@contact.FullName</a>
-                    </li>
-                }
-            }
-        </ul>
-    </aside>
+<script>
+    document.getElementById("toggleView").addEventListener("click", function () {
+        // Call backend or reload with ViewData["IsStudentView"] toggled
+        window.location.href = "/Messages/SwitchView"; // example endpoint
+    });
 
-    <!-- Message Display Area -->
-    <div class="ai-chat__messages">
-        @foreach (var msg in Model.Messages)
-        {
-            var alignmentClass = msg.IsUser ? "ai-msg--user" : "ai-msg--ai";
-            <div class="ai-msg @alignmentClass">
-                <div class="ai-msg__bubble">@msg.Content</div>
-                <div class="ai-msg__meta">@msg.SenderName • @msg.Timestamp.ToString("HH:mm dd MMM")</div>
-            </div>
-        }
-    </div>
+    document.getElementById("searchInput").addEventListener("input", function () {
+        const query = this.value.toLowerCase();
+        const rows = document.querySelectorAll("#userTable tr");
+        rows.forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(query) ? "" : "none";
+        });
+    });
 
-    <!-- Message Composer -->
-    <form asp-action="SendMessage" method="post" class="ai-chat__composer">
-        <input type="hidden" name="recipient" value="@Model.SelectedRecipient" />
-        <div class="input-group">
-            <input type="text" name="messageText" class="form-control ai-chat__input" placeholder="Type your message..." required />
-            <button type="submit" class="ai-chat__send">Send</button>
+    document.getElementById("sortButton").addEventListener("click", function () {
+        const table = document.getElementById("userTable");
+        const rows = Array.from(table.rows);
+        rows.sort((a, b) => a.cells[0].innerText.localeCompare(b.cells[0].innerText));
+        rows.forEach(row => table.appendChild(row));
+    });
+
+    function startChat(userId) {
+        window.location.href = `/Messages/ChatWith/${userId}`;
+    }
+</script>
+
+<div class="directory-wrapper">
+    <header class="directory-header">
+        <h2>@ViewData["Title"]</h2>
+        <button id="toggleView" class="btn btn-secondary">
+            Show @(isStudentView ? "Tutors" : "Students")
+        </button>
+    </header>
+
+    <section class="directory-controls">
+        <input type="text" id="searchInput" class="form-control" placeholder="Search by name or email..." />
+        <button id="sortButton" class="btn btn-outline-primary">Sort A-Z</button>
+    </section>
+
+    <section class="directory-table">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Surname</th>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Groups</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="userTable">
+                    @foreach (var user in Model.AllUsers)
+                    {
+                        <tr>
+                            <td>@user.FirstName</td>
+                            <td>@user.LastName</td>
+                            <td>@user.ID</td>
+                            <td>@user.Email</td>
+                            <td>@user.PhoneNumber</td>
+                            <td>@string.Join(", ", Model.Groups ?? new List<string>())</td>
+                            <td>
+                                <button class="btn btn-sm btn-success" onclick="startChat('@user.ID')">💬 Message</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </div>
-    </form>
+    </section>
 </div>
+
+<style>
+    .directory-wrapper {
+        padding: 30px;
+        max-width: 1200px;
+        margin: auto;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    .directory-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .directory-controls {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    #searchInput {
+        flex-grow: 1;
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+
+    .directory-table {
+        overflow-x: auto;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f0f8ff;
+        cursor: pointer;
+    }
+
+    thead th {
+        position: sticky;
+        top: 0;
+        background-color: #f8f9fa;
+        z-index: 1;
+    }
+
+</style>

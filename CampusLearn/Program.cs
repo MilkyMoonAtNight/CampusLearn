@@ -1,4 +1,4 @@
-using CampusLearn.Data;
+﻿using CampusLearn.Data;
 using CampusLearn.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -10,7 +10,10 @@ var builder = WebApplication.CreateBuilder(args);
 // MVC with views
 builder.Services.AddControllersWithViews();
 
-// Session configuration
+// ✅ Add distributed memory cache (required for session)
+builder.Services.AddDistributedMemoryCache();
+
+// ✅ Session configuration
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30); // Adjust as needed
@@ -62,10 +65,9 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// Optional: Add authentication if using Identity or cookies
-// app.UseAuthentication();
-
+// ✅ Enable session middleware
 app.UseSession();
+
 app.UseAuthorization();
 
 // -------------------- Routing --------------------
@@ -80,5 +82,3 @@ app.MapControllerRoute(
 );
 
 app.Run();
-
-

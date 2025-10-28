@@ -88,28 +88,36 @@
         {
             foreach (var reply in Model.Replies)
             {
-                <div class="reply">
-                    <span class="reply-author">@reply.Author</span>
-                    <span class="reply-timestamp">(@reply.PostedAt.ToShortTimeString())</span>
-                    <div class="reply-message">@reply.Message</div>
-                </div>
+        <div class="reply">
+            <span class="reply-author">@reply.Author</span>
+            <span class="reply-timestamp">(@reply.PostedAt.ToShortTimeString())</span>
+            <div class="reply-message">@reply.Message</div>
+        </div>
             }
         }
         else
         {
-            <p>No replies yet. Be the first to comment!</p>
+        <p>No replies yet. Be the first to comment!</p>
         }
     </div>
 
     <!-- Reply Form -->
     <div class="reply-form">
         <form asp-action="AddReply" method="post">
+            @Html.AntiForgeryToken()
             <input type="hidden" name="id" value="@Model.Id" />
-            <label>Your Name:</label>
-            <input name="author" />
+            <div asp-validation-summary="All" class="validation-summary-errors"></div>
+
             <label>Message:</label>
-            <textarea name="message" rows="4"></textarea>
+            <textarea name="message" rows="4" class="form-control" placeholder="Write a reply" required></textarea>
+            
             <button type="submit">Reply</button>
         </form>
     </div>
 </div>
+
+@section Scripts{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

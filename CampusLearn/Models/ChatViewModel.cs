@@ -1,0 +1,10 @@
+﻿namespace CampusLearn.Models
+{
+    public class ChatViewModel
+    {
+        public MessageUser TargetUser { get; set; }
+        public List<ChatMessage> Messages { get; set; } = new();
+        public long ChatSessionID { get; set; }
+        public long CurrentUserID { get; set; }
+    }
+}

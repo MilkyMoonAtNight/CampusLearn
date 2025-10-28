@@ -1,43 +1,175 @@
 ﻿<style>
-    .chat-popup {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 9999;
-        width: 360px;
-        max-height: 500px;
-        background: var(--cl-surface);
-        border-radius: var(--cl-radius);
-        box-shadow: var(--cl-shadow);
-        transition: opacity 0.3s ease, transform 0.3s ease;
-    }
-
-        .chat-popup.hidden {
-            opacity: 0;
-            pointer-events: none;
-            transform: translateY(20px);
-        }
-
+.chat-popup.hidden {
+    display: none !important;
+}
 </style>
 
-<div id="chatPopup" class="chat-popup hidden">
-    <div class="ai-chat">
-        <div class="ai-chat__messages">
-            @foreach (var msg in Model.Messages)
-            {
-                var cssClass = msg.IsUser ? "ai-msg--user" : "ai-msg--ai";
-                <div class="ai-msg @cssClass">
-                    <div class="ai-msg__bubble">@msg.Content</div>
-                    <div class="ai-msg__meta">@msg.SenderName • @msg.Timestamp.ToString("HH:mm")</div>
-                </div>
-            }
+<button id="openChatBtn" onclick="toggleChat()" style="position:fixed;right:20px;bottom:20px;z-index:9998;background:#0078D7;color:#fff;border:none;border-radius:50%;width:56px;height:56px;font-size:20px;cursor:pointer;">
+    💬
+</button>
+
+<!-- Chat popup (starts hidden) -->
+<div id="chatPopup" class="chat-popup hidden" style="position:fixed;bottom:90px;right:20px;z-index:9999;width:360px;max-height:520px;background:#fff;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.12);display:flex;flex-direction:column;overflow:hidden;">
+    <div class="ai-chat__header" style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#0078D7;color:#fff;">
+        <strong>CampusLearn Support</strong>
+        <button id="closeChat" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">✕</button>
+    </div>
+
+    <div id="chatMessages" class="ai-chat__messages" style="padding:12px;overflow-y:auto;height:340px;display:flex;flex-direction:column;gap:8px;background:#f7f9fb;">
+        <!-- initial greeting -->
+        <div class="ai-msg ai-msg--ai" style="max-width:75%;background:#e9e9e9;color:#333;padding:8px 12px;border-radius:12px;">
+            Hi! I’m your CampusLearn assistant. Ask me anything about this module.
         </div>
-        <form asp-action="SendMessage" method="post" class="ai-chat__composer">
-            <div class="input-group">
-                <input type="text" name="MessageText" class="form-control ai-chat__input" placeholder="Type a message..." required />
-                <button type="submit" class="ai-chat__send">Send</button>
-            </div>
-        </form>
+    </div>
+
+    <div class="ai-chat__composer" style="padding:10px;display:flex;gap:8px;border-top:1px solid #eee;">
+        <input id="userInput" type="text" placeholder="Type a message..." autocomplete="off" style="flex:1;border-radius:6px;border:1px solid #ccc;padding:8px;">
+        <button id="sendBtn" style="background:#0078D7;color:#fff;border:none;border-radius:6px;padding:8px 12px;cursor:pointer;">Send</button>
     </div>
 </div>
 
+<script>
+    // Global function for direct onclick
+    function toggleChat() {
+        const popup = document.getElementById('chatPopup');
+        if (popup.classList.contains('hidden')) {
+            popup.classList.remove('hidden');
+            popup.style.display = 'flex';
+        } else {
+            popup.classList.add('hidden');
+        }
+    }
+
+    // Wait for elements to be available
+    setTimeout(() => {
+        const openBtn = document.getElementById('openChatBtn');
+        const chatPopup = document.getElementById('chatPopup');
+        const closeBtn = document.getElementById('closeChat');
+        const sendBtn = document.getElementById('sendBtn');
+        const userInput = document.getElementById('userInput');
+        const chatMessages = document.getElementById('chatMessages');
+
+        console.log('Elements found:', { openBtn, chatPopup, closeBtn });
+
+        // Helpers
+        function showPopup() {
+            console.log('Showing popup');
+            chatPopup.classList.remove('hidden');
+            chatPopup.style.display = 'flex';
+            userInput.focus();
+        }
+        function hidePopup() {
+            console.log('Hiding popup');
+            chatPopup.classList.add('hidden');
+        }
+        function appendMessage(sender, text, temporary=false) {
+            const wrapper = document.createElement('div');
+            wrapper.className = sender === 'user' ? 'ai-msg ai-msg--user' : 'ai-msg ai-msg--ai';
+            wrapper.style.maxWidth = '75%';
+            wrapper.style.padding = '8px 12px';
+            wrapper.style.borderRadius = '12px';
+            wrapper.style.fontSize = '14px';
+            if (sender === 'user') {
+                wrapper.style.alignSelf = 'flex-end';
+                wrapper.style.background = '#0078D7';
+                wrapper.style.color = '#fff';
+            } else if (sender === 'ai') {
+                wrapper.style.alignSelf = 'flex-start';
+                wrapper.style.background = '#e9e9e9';
+                wrapper.style.color = '#333';
+            }
+            wrapper.textContent = text;
+            if (temporary) wrapper.dataset.temp = '1';
+            chatMessages.appendChild(wrapper);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return wrapper;
+        }
+        function updateLastTempAI(text) {
+            const last = chatMessages.querySelector('[data-temp="1"]');
+            if (last) {
+                last.textContent = text;
+                last.removeAttribute('data-temp');
+            }
+        }
+
+        // Toggle popup
+        openBtn.addEventListener('click', () => {
+            showPopup();
+        });
+        closeBtn.addEventListener('click', () => {
+            hidePopup();
+        });
+
+        // Allow Enter to send
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendBtn.click();
+            }
+        });
+
+        // Send handler
+        sendBtn.addEventListener('click', async () => {
+            const text = userInput.value.trim();
+            if (!text) return;
+            appendMessage('user', text);
+            userInput.value = '';
+
+            // tutor trigger detection
+            const normalized = text.toLowerCase();
+            const isTutorRequest = (
+                normalized.includes('talk to a tutor') ||
+                normalized.includes('contact tutor') ||
+                normalized.includes('message tutor') ||
+                normalized.includes('need help from tutor') ||
+                normalized.includes('i need a tutor')
+            );
+            if (isTutorRequest) {
+                appendMessage('ai', "Okay — I’ve flagged a tutor request. You'll be notified shortly.");
+                // visually confirm
+                const notice = document.createElement('div');
+                notice.className = 'alert-info';
+                notice.textContent = '📨 Tutor request logged (visual only)';
+                notice.style.alignSelf = 'center';
+                notice.style.background = '#cce5ff';
+                notice.style.padding = '6px';
+                notice.style.borderRadius = '6px';
+                chatMessages.appendChild(notice);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                // optionally: send to your endpoint to log tutor request
+                // fetch('/api/tutor/notify', { method: 'POST', body: JSON.stringify({ message: text }) });
+                return;
+            }
+
+            // show temporary thinking message
+            appendMessage('ai', 'Thinking...', true);
+
+            // Call AI API
+            try {
+                const res = await fetch('/api/AIAssistant/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: text })
+                });
+
+                if (!res.ok) {
+                    const txt = await res.text();
+                    updateLastTempAI('Error: ' + res.status + ' ' + res.statusText);
+                    console.error('AI API error:', res.status, txt);
+                    return;
+                }
+
+                const data = await res.json();
+                // data.answer expected per your controller
+                const answer = data?.answer ?? data?.result ?? 'No answer returned';
+                updateLastTempAI(answer);
+            } catch (err) {
+                updateLastTempAI('Network error');
+                console.error('Network error calling AI API:', err);
+            }
+        });
+
+        // debug helper: show console if nothing works
+        console.log('Chat popup initialized. Buttons wired:', { openBtn: !!openBtn, closeBtn: !!closeBtn, sendBtn: !!sendBtn });
+    }, 100);
+</script>

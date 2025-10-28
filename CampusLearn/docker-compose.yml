@@ -1,5 +1,5 @@
 ﻿
-
+version: '3.8'
 services:
   campuslearn-db:
     image: postgres:15
@@ -26,6 +26,9 @@ services:
       Gemini__ApiKey: "AIzaSyDnSQh7QCZbtQdwX4eXVvgVEaJPb7xFPuc"
     ports:
       - "5014:8080"
+    
+
 
 volumes:
   pgdata:
+    
