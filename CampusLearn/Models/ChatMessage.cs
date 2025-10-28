@@ -19,7 +19,7 @@ namespace CampusLearn.Models
         [Required]
         public string MessageText { get; set; }
 
-        public DateTime SentAt { get; set; } = DateTime.Now;
+        public DateTime SentAt { get; set; } = DateTime.UtcNow;
 
         
     }

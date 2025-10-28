@@ -36,5 +36,12 @@ namespace CampusLearn.Controllers
 
             return RedirectToAction("Index", "LogIn");
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear(); 
+            return RedirectToAction("Index", "LogIn"); 
+        }
     }
 }

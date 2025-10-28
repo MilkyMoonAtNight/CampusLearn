@@ -29,5 +29,6 @@ namespace CampusLearn.Models
             "INF281",
             "AOT300"
         };
+        public MessageUser TargetUser => AllUsers?.FirstOrDefault(u => u.ID == SelectedRecipientID);
     }
 }

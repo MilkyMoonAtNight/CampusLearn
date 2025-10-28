@@ -1,0 +1,125 @@
+﻿@model ChatViewModel
+@Html.AntiForgeryToken()
+
+<style>
+    .chat-thread {
+        max-height: 500px;
+        overflow-y: auto;
+        padding: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+
+    .chat-bubble {
+        padding: 0.75rem 1rem;
+        border-radius: 16px;
+        margin-bottom: 1rem;
+        max-width: 70%;
+        word-wrap: break-word;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .sent {
+        background-color: #007bff;
+        color: white;
+        align-self: flex-end;
+        margin-left: auto;
+    }
+
+    .received {
+        background-color: #e4e6eb;
+        color: #333;
+        align-self: flex-start;
+        margin-right: auto;
+    }
+
+    .chat-meta {
+        font-size: 0.75rem;
+        color: #666;
+        margin-bottom: 0.25rem;
+    }
+
+    .chat-text {
+        font-size: 1rem;
+    }
+
+    form textarea {
+        resize: none;
+    }
+
+    form button {
+        margin-top: 0.5rem;
+    }
+</style>
+
+<h2 class="mb-4">Chat with @Model.TargetUser.FirstName</h2>
+<div class="chat-thread border rounded p-3 mb-4" style="max-height: 500px; overflow-y: auto;">
+    @foreach (var msg in Model.Messages)
+    {
+        var isSent = msg.IsFromStudent;
+        <div class="d-flex mb-3 @(isSent ? "justify-content-end" : "justify-content-start")">
+            <div class="chat-bubble p-2 rounded @(isSent ? "bg-primary text-white" : "bg-light text-dark")" style="max-width: 70%;">
+                <div class="chat-meta small text-muted">@msg.SentAt.ToString("g")</div>
+                <div class="chat-text">@msg.MessageText</div>
+            </div>
+        </div>
+    }
+</div>
+
+<form id="chatForm">
+    @Html.AntiForgeryToken()
+    <textarea name="messageText" rows="3" placeholder="Type your message..." required></textarea>
+    <input type="hidden" name="sessionId" value="@Model.ChatSessionID" />
+    <button type="submit" class="btn btn-primary">Send</button>
+</form>
+<script>
+        function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.innerText = text;
+        return div.innerHTML;
+    }
+    document.getElementById('chatForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        const data = new FormData(form);
+
+        // Extract the anti-forgery token manually
+        const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+
+        fetch('@Url.Action("SendMessage", "Messages")', {
+            method: 'POST',
+            body: data,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'RequestVerificationToken': token
+            }
+        })
+        .then(response => {
+            console.log("Status:", response.status);
+            if (!response.ok) throw new Error("Failed to send message");
+            return response.text();
+        })
+    .then(() => {
+        const message = form.messageText.value; // ✅ capture first
+        form.messageText.value = "";
+
+        const thread = document.querySelector('.chat-thread');
+        const bubble = document.createElement('div');
+        bubble.className = 'd-flex mb-3 justify-content-end';
+        bubble.innerHTML = `
+            <div class="chat-bubble p-2 rounded bg-primary text-white" style="max-width: 70%;">
+                <div class="chat-meta small text-muted">just now</div>
+                <div class="chat-text">${message}</div>
+            </div>
+        `;
+        thread.appendChild(bubble);
+        thread.scrollTop = thread.scrollHeight;
+    })
+        .catch(err => {
+            console.error("Error:", err);
+            alert("Message failed to send.");
+        });
+    });
+</script>
