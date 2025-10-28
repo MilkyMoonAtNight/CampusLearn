@@ -1,5 +1,6 @@
 ﻿using CampusLearn.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace CampusLearn.Data
 {
@@ -17,6 +18,9 @@ namespace CampusLearn.Data
         public DbSet<Enrollment> Enrollments { get; set; }
         public DbSet<ChatSession> ChatSessions { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<MessageUser> MessageUsers { get; set; }
+
+
         public DbSet<ForumTopic> ForumTopics { get; set; }
         public DbSet<Reply> Replies { get; set; }
         public DbSet<Session> Sessions { get; set; }

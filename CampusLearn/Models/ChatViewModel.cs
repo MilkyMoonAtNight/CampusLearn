@@ -6,5 +6,8 @@
         public List<ChatMessage> Messages { get; set; } = new();
         public long ChatSessionID { get; set; }
         public long CurrentUserID { get; set; }
+        public bool IsCurrentUserStudent { get; set; }
+
+
     }
 }

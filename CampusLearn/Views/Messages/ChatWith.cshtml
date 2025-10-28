@@ -1,5 +1,8 @@
 ﻿@model ChatViewModel
 @Html.AntiForgeryToken()
+@{
+    var currentUserId = Model.CurrentUserID; // Add this to your model if not already present
+}
 
 <style>
     .chat-thread {
@@ -12,27 +15,25 @@
     }
 
     .chat-bubble {
-        padding: 0.75rem 1rem;
-        border-radius: 16px;
-        margin-bottom: 1rem;
         max-width: 70%;
+        padding: 10px 15px;
+        border-radius: 15px;
         word-wrap: break-word;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    .sent {
-        background-color: #007bff;
-        color: white;
-        align-self: flex-end;
-        margin-left: auto;
-    }
+        .chat-bubble.sent {
+            background-color: #e0d4f7; /* soft purple */
+            color: #333;
+            border-top-right-radius: 0;
+        }
 
-    .received {
-        background-color: #e4e6eb;
-        color: #333;
-        align-self: flex-start;
-        margin-right: auto;
-    }
+        .chat-bubble.received {
+            background-color: #f1f1f1;
+            color: #333;
+            border-top-left-radius: 0;
+        }
+
+
 
     .chat-meta {
         font-size: 0.75rem;
@@ -54,12 +55,14 @@
 </style>
 
 <h2 class="mb-4">Chat with @Model.TargetUser.FirstName</h2>
+
 <div id="chatThread" class="chat-thread border rounded p-3 mb-4" style="max-height: 500px; overflow-y: auto;">
     @foreach (var msg in Model.Messages)
     {
-        var isSent = msg.IsFromStudent;
-        <div class="d-flex mb-3 @(isSent ? "justify-content-end" : "justify-content-start")">
-            <div class="chat-bubble @(isSent ? "sent" : "received")">
+        var isSentByMe = msg.IsFromStudent == Model.IsCurrentUserStudent;
+
+        <div class="d-flex mb-3 @(isSentByMe ? "justify-content-end" : "justify-content-start")">
+            <div class="chat-bubble @(isSentByMe ? "sent" : "received")">
                 <div class="chat-meta small text-muted">@msg.SentAt.ToString("g")</div>
                 <div class="chat-text">@Html.Raw(Html.Encode(msg.MessageText))</div>
             </div>
