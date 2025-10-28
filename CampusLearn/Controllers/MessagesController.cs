@@ -72,7 +72,7 @@ namespace CampusLearn.Controllers
                 RoleFilter = roleFilter
             };
 
-            return View("Chat", model);
+            return View("Index", model);
         }
 
         [HttpPost]

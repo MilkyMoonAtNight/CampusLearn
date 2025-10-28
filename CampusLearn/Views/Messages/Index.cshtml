@@ -1,83 +1,127 @@
 ﻿@model CampusLearn.Models.MessageView
+@{
+    ViewData["Title"] = "User Directory";
+    var isStudentView = ViewData["IsStudentView"] as bool? ?? true;
+}
 
-<div class="chat-container">
-    <h2>Conversation with @Model.AllUsers.FirstOrDefault(u => u.ID == Model.SelectedRecipientID)?.FirstName</h2>
+<script>
+    document.getElementById("toggleView").addEventListener("click", function () {
+        // Call backend or reload with ViewData["IsStudentView"] toggled
+        window.location.href = "/Messages/SwitchView"; // example endpoint
+    });
 
-    <div class="chat-thread">
-        @if (Model.Messages == null || !Model.Messages.Any())
-        {
-            <p>No messages yet. Start the conversation!</p>
-        }
-        else
-        {
-            foreach (var message in Model.Messages)
-            {
-                var isSentByCurrentUser = message.SenderID == Model.CurrentUserID;
-                <div class="chat-bubble @(isSentByCurrentUser ? "sent" : "received")">
-                    <div class="chat-meta">
-                        <strong>@(isSentByCurrentUser ? "You" : Model.AllUsers.FirstOrDefault(u => u.ID == message.SenderID)?.FirstName)</strong>
-                        <span class="timestamp">@message.Timestamp.ToString("g")</span>
-                    </div>
-                    <div class="chat-text">@message.Content</div>
-                </div>
-            }
-        }
-    </div>
+    document.getElementById("searchInput").addEventListener("input", function () {
+        const query = this.value.toLowerCase();
+        const rows = document.querySelectorAll("#userTable tr");
+        rows.forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(query) ? "" : "none";
+        });
+    });
 
-    <form asp-action="SendMessage" method="post" class="chat-form">
-        <input type="hidden" name="recipientId" value="@Model.SelectedRecipientID" />
-        <textarea name="messageText" rows="3" placeholder="Type your message..." required></textarea>
-        <button type="submit" class="btn btn-primary">Send</button>
-    </form>
+    document.getElementById("sortButton").addEventListener("click", function () {
+        const table = document.getElementById("userTable");
+        const rows = Array.from(table.rows);
+        rows.sort((a, b) => a.cells[0].innerText.localeCompare(b.cells[0].innerText));
+        rows.forEach(row => table.appendChild(row));
+    });
+
+    function startChat(userId) {
+        window.location.href = `/Messages/ChatWith/${userId}`;
+    }
+</script>
+
+<div class="directory-wrapper">
+    <header class="directory-header">
+        <h2>@ViewData["Title"]</h2>
+        <button id="toggleView" class="btn btn-secondary">
+            Show @(isStudentView ? "Tutors" : "Students")
+        </button>
+    </header>
+
+    <section class="directory-controls">
+        <input type="text" id="searchInput" class="form-control" placeholder="Search by name or email..." />
+        <button id="sortButton" class="btn btn-outline-primary">Sort A-Z</button>
+    </section>
+
+    <section class="directory-table">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Surname</th>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Groups</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="userTable">
+                    @foreach (var user in Model.AllUsers)
+                    {
+                        <tr>
+                            <td>@user.FirstName</td>
+                            <td>@user.LastName</td>
+                            <td>@user.ID</td>
+                            <td>@user.Email</td>
+                            <td>@user.PhoneNumber</td>
+                            <td>@string.Join(", ", Model.Groups ?? new List<string>())</td>
+                            <td>
+                                <button class="btn btn-sm btn-success" onclick="startChat('@user.ID')">💬 Message</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
 </div>
 
 <style>
-    .chat-container {
-        max-width: 700px;
+    .directory-wrapper {
+        padding: 30px;
+        max-width: 1200px;
         margin: auto;
-        padding: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
     }
 
-    .chat-thread {
-        border: 1px solid #ccc;
-        padding: 15px;
+    .directory-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 20px;
-        max-height: 400px;
-        overflow-y: auto;
-        background-color: #f9f9f9;
     }
 
-    .chat-bubble {
-        margin-bottom: 15px;
-        padding: 10px;
-        border-radius: 10px;
-        max-width: 80%;
+    .directory-controls {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
     }
 
-    .sent {
-        background-color: #d1e7dd;
-        align-self: flex-end;
-        margin-left: auto;
+    #searchInput {
+        flex-grow: 1;
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
     }
 
-    .received {
-        background-color: #f8d7da;
-        align-self: flex-start;
-        margin-right: auto;
+    .directory-table {
+        overflow-x: auto;
     }
 
-    .chat-meta {
-        font-size: 0.9em;
-        color: #555;
-        margin-bottom: 5px;
+    .table-hover tbody tr:hover {
+        background-color: #f0f8ff;
+        cursor: pointer;
     }
 
-    .chat-text {
-        font-size: 1em;
+    thead th {
+        position: sticky;
+        top: 0;
+        background-color: #f8f9fa;
+        z-index: 1;
     }
 
-    .chat-form textarea {
-        width: 100%;
-        margin-bottom: 10px;
-    }
 </style>

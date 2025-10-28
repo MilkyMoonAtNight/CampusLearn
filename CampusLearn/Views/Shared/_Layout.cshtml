@@ -387,15 +387,20 @@
             }
         </div>
     </div>
-
     <!-- Floating Chat Bubble -->
-    <div id="chatBubble"
-         style="position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px;
-            border-radius: 50%; background-color: #007bff; color: white;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000;">
-        💬
-    </div>
+    @{
+        var hideChat = ViewData["HideChat"] as bool? ?? false;
+    }
+    @if(!hideChat)
+    {
+        <div id="chatBubble"
+            style="position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px;
+                border-radius: 50%; background-color: #007bff; color: white;
+                display: flex; align-items: center; justify-content: center;
+                cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000;">
+            💬
+        </div>
+    }
 
     <!-- Chat Sidebar -->
     <div id="chatSidebar"

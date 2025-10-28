@@ -26,7 +26,7 @@ namespace CampusLearn.Controllers
                 .FirstOrDefaultAsync(s => s.StudentID == userId.Value);
 
             if (student != null)
-                return View("StudentProfile", student);
+                return View("Index", student);
 
             var tutor = await _context.Tutors
                 .FirstOrDefaultAsync(t => t.TutorID == userId.Value);

@@ -12,11 +12,15 @@ namespace CampusLearn.Models
         public string LastName { get; set; }
         public string PersonalEmail { get; set; }
         public string Phone { get; set; }
-
         public string PasswordHash { get; set; }
 
-        // <-- Add this
-        
+        public List<string> Groups => new List<string>
+        {
+            "PRG381",
+            "LPR381",
+            "INF281",
+            "AOT300"
+        };
 
         public ICollection<StudentTutor> StudentTutors { get; set; } = new List<StudentTutor>();
         public ICollection<SessionStudent> SessionStudents { get; set; } = new List<SessionStudent>();
