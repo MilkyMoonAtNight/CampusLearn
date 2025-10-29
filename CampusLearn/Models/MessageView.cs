@@ -17,20 +17,13 @@ namespace CampusLearn.Models
 
     public class MessageView
     {
-        public int CurrentUserID { get; set; }
-        public int SelectedRecipientID { get; set; }
-
-        public List<MessageUser> AllUsers { get; set; } // Or List<Tutor> if tutors are messaging
-        public List<Message> Messages { get; set; }
-        public string SearchQuery { get; set; }
-        public string RoleFilter { get; set; }
-        public List<string> Groups => new List<string>
-        {
-            "PRG381",
-            "LPR381",
-            "INF281",
-            "AOT300"
-        };
-        public MessageUser TargetUser => AllUsers?.FirstOrDefault(u => u.ID == SelectedRecipientID);
+        public long CurrentUserID { get; set; }
+        public long SelectedRecipientID { get; set; }
+        public List<MessageUser> AllUsers { get; set; } = new();
+        public List<ChatMessage> Messages { get; set; } = new();
+        public string? SearchQuery { get; set; }
+        public string? RoleFilter { get; set; }
+        public IReadOnlyList<string> Groups { get; set; } = Array.Empty<string>();
+        public MessageUser? TargetUser => AllUsers?.FirstOrDefault(u => u.Id == SelectedRecipientID);
     }
 }

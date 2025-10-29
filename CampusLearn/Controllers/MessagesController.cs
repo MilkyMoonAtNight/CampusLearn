@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using CampusLearn.Data;
+﻿using CampusLearn.Data;
 using CampusLearn.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace CampusLearn.Controllers
 {
@@ -42,19 +42,20 @@ namespace CampusLearn.Controllers
                 .ToListAsync();
         }
 
-        // Only groups for a specific student (if you prefer per-user groups)
+        // Only groups for a specific student (use if you want per-user groups instead)
         private Task<List<string>> GetGroupsForStudentAsync(long studentId)
         {
+            // If you actually want module names for the student, join via EnrollmentDegree -> DegreeModule -> TopicModule
             return _context.EnrollmentDegrees
                 .Where(ed => ed.Enrollment.StudentID == studentId)
-                .Select(ed => ed.Degree.DegreeName)
+                .Select(ed => ed.Degree.DegreeName) // or .Select(ed => ed.Module.ModuleName) if you change the projection
                 .Distinct()
                 .OrderBy(n => n)
                 .ToListAsync();
         }
 
         // ---------------------------
-        // Build user list
+        // Build user list (Students + Tutors + Admins)
         // ---------------------------
         private async Task<List<MessageUser>> GetAllUsersAsync(long currentUserId)
         {
@@ -68,7 +69,6 @@ namespace CampusLearn.Controllers
                     Email = s.PersonalEmail,
                     PhoneNumber = s.Phone,
                     Role = "Student",
-                    // If you want per-student groups, populate later (see optional block below)
                     Groups = new List<string>()
                 })
                 .ToListAsync();
@@ -79,17 +79,30 @@ namespace CampusLearn.Controllers
                     Id = t.TutorID,
                     FirstName = t.TutorName,
                     LastName = t.TutorSurname,
+                    Email = null,            // add if you have tutor email column
+                    PhoneNumber = null,      // add if you have tutor phone column
                     Role = "Tutor",
                     Groups = new List<string>()
                 })
                 .ToListAsync();
 
-            var all = students.Concat(tutors)
+            var admins = await _context.Admins
+                .Select(a => new MessageUser
+                {
+                    Id = a.AdminID,
+                    FirstName = a.AdminName,
+                    LastName = a.AdminSurname,
+                    Email = a.AdminEmail,
+                    PhoneNumber = a.AdminPhone,
+                    Role = "Admin",
+                    Groups = new List<string>()
+                })
+                .ToListAsync();
+
+            return students.Concat(tutors).Concat(admins)
                 .OrderBy(u => u.FirstName)
                 .ThenBy(u => u.LastName)
                 .ToList();
-
-            return all;
         }
 
         // ---------------------------
@@ -106,6 +119,8 @@ namespace CampusLearn.Controllers
                 allUsers = allUsers.Where(u =>
                        (u.FirstName ?? "").Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
                     || (u.LastName ?? "").Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
+                    || (u.Email ?? "").Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
+                    || (u.PhoneNumber ?? "").Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
                     || u.Id.ToString().Contains(searchQuery)
                 ).ToList();
             }
@@ -115,8 +130,7 @@ namespace CampusLearn.Controllers
                 allUsers = allUsers.Where(u => u.Role == roleFilter).ToList();
             }
 
-            // Option A: all module names as groups
-            var groups = await GetAllGroupsAsync();
+            var groups = await GetAllGroupsAsync(); // or GetGroupsForStudentAsync(CurrentUserId)
 
             var model = new MessageView
             {
@@ -129,7 +143,7 @@ namespace CampusLearn.Controllers
                 Groups = groups
             };
 
-            return View("Index", model);
+            return View("Index", model); // Views/Messages/Index.cshtml
         }
 
         // ---------------------------
@@ -173,7 +187,22 @@ namespace CampusLearn.Controllers
                     Id = tutor.TutorID,
                     FirstName = tutor.TutorName,
                     LastName = tutor.TutorSurname,
+                    Email = null,
+                    PhoneNumber = null,
                     Role = "Tutor",
+                    Groups = new List<string>()
+                };
+
+            var admin = _context.Admins.AsNoTracking().FirstOrDefault(a => a.AdminID == id);
+            if (admin != null)
+                return new MessageUser
+                {
+                    Id = admin.AdminID,
+                    FirstName = admin.AdminName,
+                    LastName = admin.AdminSurname,
+                    Email = admin.AdminEmail,
+                    PhoneNumber = admin.AdminPhone,
+                    Role = "Admin",
                     Groups = new List<string>()
                 };
 
@@ -218,7 +247,7 @@ namespace CampusLearn.Controllers
         }
 
         // ---------------------------
-        // Open chat with another user
+        // Full-page chat (existing)
         // ---------------------------
         public IActionResult ChatWith(long id)
         {
@@ -236,11 +265,11 @@ namespace CampusLearn.Controllers
                 ChatSessionID = session.ChatSessionID
             };
 
-            return View(viewModel);
+            return View(viewModel); // Views/Messages/ChatWith.cshtml
         }
 
         // ---------------------------
-        // Ajax: get messages in a session
+        // Ajax: get messages (legacy partial if you still use it)
         // ---------------------------
         [HttpGet]
         public async Task<IActionResult> GetMessages(long sessionId)
@@ -258,7 +287,7 @@ namespace CampusLearn.Controllers
         }
 
         // ---------------------------
-        // Send message
+        // Send (full-page)
         // ---------------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -284,7 +313,6 @@ namespace CampusLearn.Controllers
                 SentAt = DateTime.UtcNow,
                 SenderStudentID = isStudent ? currentUserId : null,
                 SenderTutorID = isStudent ? null : currentUserId
-                // Optionally set Receiver* if you add direct addressing in UI
             };
 
             _context.ChatMessages.Add(message);
@@ -295,34 +323,85 @@ namespace CampusLearn.Controllers
 
             return RedirectToAction("ChatWith", new { id = ResolveOtherUserId(session.Topic, currentUserId) });
         }
-    }
 
-    // ============================
-    // ViewModels (kept in this file)
-    // ============================
-    public class MessageView
-    {
-        public long CurrentUserID { get; set; }
-        public long SelectedRecipientID { get; set; }
+        // ---------------------------
+        // Inline chat: load partial
+        // ---------------------------
+        [HttpGet]
+        public IActionResult Thread(long id)
+        {
+            var currentUserId = CurrentUserId;
+            var target = GetUserById(id);
+            if (target == null) return NotFound();
 
-        public List<MessageUser> AllUsers { get; set; } = new();
-        public List<ChatMessage> Messages { get; set; } = new();
+            var session = GetOrCreateChatSession(currentUserId, id);
 
-        public string? SearchQuery { get; set; }
-        public string? RoleFilter { get; set; }
+            var messages = _context.ChatMessages
+                .Where(m => m.ChatSessionID == session.ChatSessionID)
+                .OrderBy(m => m.SentAt)
+                .ToList();
 
-        // Populated from DB (Option A)
-        public IReadOnlyList<string> Groups { get; set; } = Array.Empty<string>();
+            var vm = new ChatViewModel
+            {
+                TargetUser = target,
+                Messages = messages,
+                CurrentUserID = currentUserId,
+                ChatSessionID = session.ChatSessionID
+            };
 
-        public MessageUser? TargetUser =>
-            AllUsers?.FirstOrDefault(u => u.Id == SelectedRecipientID);
-    }
+            return PartialView("_ChatThread", vm);
+        }
 
-    public class ChatViewModel
-    {
-        public MessageUser TargetUser { get; set; } = new();
-        public List<ChatMessage> Messages { get; set; } = new();
-        public long CurrentUserID { get; set; }
-        public long ChatSessionID { get; set; }
+
+        // ---------------------------
+        // Inline chat: send + refresh partial
+        // ---------------------------
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SendInline(long sessionId, string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return BadRequest("Empty message.");
+
+            var session = await _context.ChatSessions
+                .AsNoTracking()
+                .FirstOrDefaultAsync(cs => cs.ChatSessionID == sessionId);
+
+            if (session == null) return NotFound();
+
+            var me = CurrentUserId;
+            var isStudent = await _context.Students.AnyAsync(s => s.StudentID == me);
+
+            var msg = new ChatMessage
+            {
+                ChatSessionID = sessionId,
+                MessageText = text.Trim(),
+                SentAt = DateTime.UtcNow,
+                SenderStudentID = isStudent ? me : null,
+                SenderTutorID = isStudent ? null : me
+            };
+
+            _context.ChatMessages.Add(msg);
+            await _context.SaveChangesAsync();
+
+            // fresh messages from DB (no duplicates)
+            var messages = await _context.ChatMessages
+                .Where(m => m.ChatSessionID == sessionId)
+                .OrderBy(m => m.SentAt)
+                .ToListAsync();
+
+            var targetId = ResolveOtherUserId(session.Topic, me);
+            var target = GetUserById(targetId)!;
+
+            var vm = new ChatViewModel
+            {
+                TargetUser = target,
+                Messages = messages,
+                CurrentUserID = me,
+                ChatSessionID = sessionId
+            };
+
+            return PartialView("_ChatThread", vm);
+        }
+
     }
 }

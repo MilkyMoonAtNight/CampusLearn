@@ -1,0 +1,229 @@
+﻿@model CampusLearn.Models.ChatViewModel
+
+<div class="inline-chat" data-user="@Model.TargetUser.Id" data-session="@Model.ChatSessionID">
+    <div class="inline-chat__header">
+        <button type="button" class="btn btn--ghost" onclick="closeInlineThread(@Model.TargetUser.Id)">← Back</button>
+        <div>
+            <strong>@Model.TargetUser.FirstName @Model.TargetUser.LastName</strong>
+            <span class="muted">(@Model.TargetUser.Role)</span>
+        </div>
+    </div>
+
+    <div class="inline-chat__history">
+        @foreach (var m in Model.Messages)
+        {
+            var isMine =
+            (m.SenderStudentID.HasValue && m.SenderStudentID.Value == Model.CurrentUserID) ||
+            (m.SenderTutorID.HasValue && m.SenderTutorID.Value == Model.CurrentUserID);
+
+            <div class="msg @(isMine ? "mine" : "theirs")">
+                <div class="bubble">
+                    @Html.Raw(Html.Encode(m.MessageText))
+                    <div class="meta">@m.SentAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <form asp-controller="Messages"
+          asp-action="SendInline"
+          method="post"
+          class="inline-chat__composer">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="sessionId" value="@Model.ChatSessionID" />
+        <input type="text" name="text" class="input" placeholder="Type a message…" autocomplete="off" required />
+        <button type="submit" class="btn btn--primary">Send</button>
+    </form>
+</div>
+
+
+<style>
+    .btn--ghost {
+        background: transparent;
+        border: 1px solid #e5e7eb;
+        color: #374151
+    }
+
+        .btn--ghost:hover {
+            background: #f9fafb
+        }
+
+    .inline-chat {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 12px;
+        background: #fff
+    }
+
+    .inline-chat__header {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px
+    }
+
+    .inline-chat__history {
+        max-height: 260px;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 6px;
+        background: #fafafa;
+        border-radius: 8px
+    }
+
+    .msg {
+        display: flex
+    }
+        .msg.mine {
+            justify-content: flex-end
+        }
+
+        .msg.theirs {
+            justify-content: flex-start
+        }
+
+    .bubble {
+        max-width: 70%;
+        padding: 8px 12px;
+        border-radius: 14px;
+        background: #f1f5f9
+    }
+
+    .msg.mine .bubble {
+        background: #dbeafe
+    }
+
+    .meta {
+        font-size: 12px;
+        opacity: .6;
+        margin-top: 4px
+    }
+
+    .inline-chat__composer {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px
+    }
+
+    .input {
+        flex: 1;
+        padding: 8px 10px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px
+    }
+
+    .inline-chat {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 12px;
+        background: #fff;
+    }
+
+    .inline-chat__header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+
+    .inline-chat__history {
+        max-height: 260px;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 6px;
+        background: #fafafa;
+        border-radius: 8px;
+    }
+
+    .msg {
+        display: flex;
+    }
+
+        .msg.mine {
+            justify-content: flex-end;
+        }
+
+        .msg.theirs {
+            justify-content: flex-start;
+        }
+
+    .bubble {
+        max-width: 70%;
+        padding: 8px 12px;
+        border-radius: 14px;
+        background: #f1f5f9;
+    }
+
+    .msg.mine .bubble {
+        background: #dbeafe;
+    }
+
+    .meta {
+        font-size: 12px;
+        opacity: .6;
+        margin-top: 4px;
+    }
+
+    .inline-chat__composer {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    .input {
+        flex: 1;
+        padding: 8px 10px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+    }
+
+    .btn {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .btn--primary {
+        background: #2563eb;
+        color: #fff;
+    }
+
+    .muted {
+        color: #6b7280;
+        font-size: .9em;
+    }
+</style>
+
+<script>
+    (function(){
+      const form = document.currentScript.closest('.inline-chat').querySelector('form');
+      const hist = document.getElementById('hist-@Model.ChatSessionID');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = new FormData(form);
+        const res = await fetch(form.action, {
+          method: 'POST',
+          body: data,
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const html = await res.text();
+        // Replace the whole inline chat with updated partial HTML
+        form.closest('.inline-chat').outerHTML = html;
+        // Scroll to bottom after replace occurs on next tick
+        setTimeout(() => {
+          const h = document.querySelector('[data-session="@Model.ChatSessionID"] .inline-chat__history');
+          if (h) h.scrollTop = h.scrollHeight;
+        }, 0);
+      });
+
+      // autoscroll to bottom on load
+      if (hist) hist.scrollTop = hist.scrollHeight;
+    })();
+</script>

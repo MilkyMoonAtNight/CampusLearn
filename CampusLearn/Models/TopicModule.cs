@@ -20,16 +20,7 @@ namespace CampusLearn.Models
 
         public long? ModuleHeadID { get; set; }
         public Tutor? ModuleHead { get; set; }
-
-        
-
         public ICollection<DegreeModule>? DegreeModules { get; set; }
         public ICollection<ModuleResource>? ModuleResources { get; set; }
-
-
-
-
-
-
     }
 }
