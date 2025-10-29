@@ -51,6 +51,7 @@ namespace CampusLearn.Controllers
             HttpContext.Session.SetInt32("LoggedInUserID", (int)user.StudentID);
             HttpContext.Session.SetString("LoggedInUser", user.PersonalEmail);
             HttpContext.Session.SetString("FirstName", user.FirstName);
+            HttpContext.Session.SetString("LastName", user.LastName);
             HttpContext.Session.SetString("Email", user.PersonalEmail ?? string.Empty);
 
             return RedirectToAction("Index", "Dashboard");

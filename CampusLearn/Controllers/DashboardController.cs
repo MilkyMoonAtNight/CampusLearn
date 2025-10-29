@@ -2,6 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using CampusLearn.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace CampusLearn.Controllers
 {
@@ -12,11 +15,22 @@ namespace CampusLearn.Controllers
     /// </summary>
     public class DashboardController : Controller
     {
+        private readonly CampusLearnContext _context;
+
+        public DashboardController(CampusLearnContext context)
+        {
+            _context = context;
+        }
+
         public IActionResult Index()
         {
+            var firstName = HttpContext.Session.GetString("FirstName") ?? "Student";
+            var lastName = HttpContext.Session.GetString("LastName") ?? "";
+            var userName = !string.IsNullOrEmpty(lastName) ? $"{firstName} {lastName}" : firstName;
+
             var vm = new DashboardViewModel
             {
-                UserName = "John Doe",
+                UserName = userName,
                 LastAccess = DateTime.Now.AddMinutes(-37),
                 Announcements = DemoData.Announcements.Take(3).ToList(),
                 UpcomingTests = DemoData.Tests
