@@ -1,6 +1,5 @@
 ﻿using CampusLearn.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace CampusLearn.Data
 {
@@ -8,6 +7,7 @@ namespace CampusLearn.Data
     {
         public CampusLearnContext(DbContextOptions<CampusLearnContext> options) : base(options) { }
 
+        // Core
         public DbSet<Student> Students { get; set; }
         public DbSet<Tutor> Tutors { get; set; }
         public DbSet<Degree> Degrees { get; set; }
@@ -15,311 +15,549 @@ namespace CampusLearn.Data
         public DbSet<TopicModule> Modules { get; set; }
         public DbSet<ModuleCluster> ModuleClusters { get; set; }
         public DbSet<Speciality> Specialities { get; set; }
-        public DbSet<Enrollment> Enrollments { get; set; }
-        public DbSet<ChatSession> ChatSessions { get; set; }
-        public DbSet<ChatMessage> ChatMessages { get; set; }
-        public DbSet<MessageUser> MessageUsers { get; set; }
-
-
-        public DbSet<ForumTopic> ForumTopics { get; set; }
-        public DbSet<Reply> Replies { get; set; }
-        public DbSet<Session> Sessions { get; set; }
-        public DbSet<Rating> Ratings { get; set; }
         public DbSet<ModuleResource> ModuleResources { get; set; }
 
-        // Join tables
-        public DbSet<DegreeModule> DegreeModules { get; set; }
-        public DbSet<StudentTutor> StudentTutors { get; set; }
+        // Users & Enrolment
+        public DbSet<Enrollment> Enrollments { get; set; }
+        public DbSet<EnrollmentDegree> EnrollmentDegrees { get; set; }
+
+        // Admins
+        public DbSet<Admin> Admins { get; set; }
+
+        // Forum
+        public DbSet<ForumTopic> ForumTopics { get; set; }
+        public DbSet<Reply> Replies { get; set; }
+
+        // Announcements
+        public DbSet<Announcement> Announcements { get; set; }
+        public DbSet<ReplyAnnouncement> ReplyAnnouncements { get; set; }
+
+        // Sessions & Ratings
+        public DbSet<Session> Sessions { get; set; }
+        public DbSet<Rating> Ratings { get; set; }
+        public DbSet<SessionRating> SessionRatings { get; set; }
         public DbSet<SessionTutor> SessionTutors { get; set; }
         public DbSet<SessionStudent> SessionStudents { get; set; }
-        public DbSet<EnrollmentDegree> EnrollmentDegrees { get; set; }
-        public DbSet<SessionRating> SessionRatings { get; set; }
+        public DbSet<StudentTutor> StudentTutors { get; set; }
+
+        // Chat
+        public DbSet<ChatSession> ChatSessions { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
+
+        // Module planning
+        public DbSet<ModulePlan> ModulePlans { get; set; }
+        public DbSet<ModuleWeek> ModuleWeeks { get; set; }
+        public DbSet<WeekContent> WeekContents { get; set; }
+        public DbSet<ModuleAssignment> ModuleAssignments { get; set; }
+        public DbSet<ModuleProject> ModuleProjects { get; set; }
+        public DbSet<ModuleTest> ModuleTests { get; set; }
+
+        // (You had MessageUser; keep if you actually use it)
+        public DbSet<MessageUser> MessageUsers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             // =========================
-            // Table & Column Mappings
+            // Core entities
             // =========================
-
-            modelBuilder.Entity<Student>(entity =>
+            modelBuilder.Entity<Student>(e =>
             {
-                entity.ToTable("student");
-                entity.HasKey(e => e.StudentID);
-                entity.Property(e => e.StudentID).HasColumnName("studentid");
-                entity.Property(e => e.FirstName).HasColumnName("firstname");
-                entity.Property(e => e.LastName).HasColumnName("lastname");
-                entity.Property(e => e.PersonalEmail).HasColumnName("personalemail");
-                entity.Property(e => e.Phone).HasColumnName("phone");
-                entity.Property(e => e.PasswordHash).HasColumnName("passwordhash");
+                e.ToTable("student");
+                e.HasKey(x => x.StudentID);
+                e.Property(x => x.StudentID).HasColumnName("studentid");
+                e.Property(x => x.FirstName).HasColumnName("firstname");
+                e.Property(x => x.LastName).HasColumnName("lastname");
+                e.Property(x => x.PersonalEmail).HasColumnName("personalemail");
+                e.Property(x => x.Phone).HasColumnName("phone");
+                e.Property(x => x.PasswordHash).HasColumnName("passwordhash");
             });
 
-            modelBuilder.Entity<Tutor>(entity =>
+            modelBuilder.Entity<Tutor>(e =>
             {
-                entity.ToTable("tutors");
-                entity.HasKey(e => e.TutorID);
-                entity.Property(e => e.TutorID).HasColumnName("tutorid");
-                entity.Property(e => e.TutorName).HasColumnName("tutorname");
-                entity.Property(e => e.TutorSurname).HasColumnName("tutorsurname");
-                entity.Property(e => e.SpecialityID).HasColumnName("specialityid");
+                e.ToTable("tutors");
+                e.HasKey(x => x.TutorID);
+                e.Property(x => x.TutorID).HasColumnName("tutorid");
+                e.Property(x => x.TutorName).HasColumnName("tutorname");
+                e.Property(x => x.TutorSurname).HasColumnName("tutorsurname");
+                e.Property(x => x.SpecialityID).HasColumnName("specialityid");
 
-                entity.HasOne(t => t.Speciality)
-                      .WithMany(s => s.Tutors)
-                      .HasForeignKey(t => t.SpecialityID);
+                e.HasOne(x => x.Speciality)
+                 .WithMany(x => x.Tutors)
+                 .HasForeignKey(x => x.SpecialityID);
             });
 
-            modelBuilder.Entity<Degree>(entity =>
+            modelBuilder.Entity<Faculty>(e =>
             {
-                entity.ToTable("degree");
-                entity.HasKey(e => e.DegreeID);
-                entity.Property(e => e.DegreeID).HasColumnName("degreeid");
-                entity.Property(e => e.DegreeName).HasColumnName("degreename");
-                entity.Property(e => e.FacultyID).HasColumnName("facultyid");
+                e.ToTable("faculty");
+                e.HasKey(x => x.FacultyID);
+                e.Property(x => x.FacultyID).HasColumnName("facultyid");
+                e.Property(x => x.FacultyName).HasColumnName("facultyname");
             });
 
-            modelBuilder.Entity<Faculty>(entity =>
+            modelBuilder.Entity<Degree>(e =>
             {
-                entity.ToTable("faculty");
-                entity.HasKey(e => e.FacultyID);
-                entity.Property(e => e.FacultyID).HasColumnName("facultyid");
-                entity.Property(e => e.FacultyName).HasColumnName("facultyname");
+                e.ToTable("degree");
+                e.HasKey(x => x.DegreeID);
+                e.Property(x => x.DegreeID).HasColumnName("degreeid");
+                e.Property(x => x.DegreeName).HasColumnName("degreename");
+                e.Property(x => x.FacultyID).HasColumnName("facultyid");
+                e.HasOne<Faculty>()
+                 .WithMany()
+                 .HasForeignKey(x => x.FacultyID);
             });
 
-            modelBuilder.Entity<TopicModule>(entity =>
+            modelBuilder.Entity<ModuleCluster>(e =>
             {
-                entity.ToTable("topicmodule");
-                entity.HasKey(e => e.ModuleID);
-                entity.Property(e => e.ModuleID).HasColumnName("moduleid");
-                entity.Property(e => e.ModuleName).HasColumnName("modulename");
-                entity.Property(e => e.ClusterID).HasColumnName("clusterid");
-                entity.Property(e => e.ModuleHeadID).HasColumnName("moduleheadid");
-
-                entity.HasOne(tm => tm.ModuleCluster)
-                      .WithMany(mc => mc.TopicModules)
-                      .HasForeignKey(tm => tm.ClusterID);
-
-                entity.HasOne(tm => tm.ModuleHead)
-                      .WithMany(t => t.TopicModules)
-                      .HasForeignKey(tm => tm.ModuleHeadID)
-                      .OnDelete(DeleteBehavior.SetNull);
+                e.ToTable("modulecluster");
+                e.HasKey(x => x.ClusterID);
+                e.Property(x => x.ClusterID).HasColumnName("clusterid");
+                e.Property(x => x.ClusterName).HasColumnName("clustername");
             });
 
-            modelBuilder.Entity<ModuleCluster>(entity =>
+            modelBuilder.Entity<Speciality>(e =>
             {
-                entity.ToTable("modulecluster");
-                entity.HasKey(e => e.ClusterID);
-                entity.Property(e => e.ClusterID).HasColumnName("clusterid");
-                entity.Property(e => e.ClusterName).HasColumnName("clustername");
+                e.ToTable("speciality");
+                e.HasKey(x => x.SpecialityID);
+                e.Property(x => x.SpecialityID).HasColumnName("specialityid");
+                e.Property(x => x.SpecialityName).HasColumnName("specialityname");
             });
 
-            modelBuilder.Entity<Speciality>(entity =>
+            modelBuilder.Entity<TopicModule>(e =>
             {
-                entity.ToTable("speciality");
-                entity.HasKey(e => e.SpecialityID);
-                entity.Property(e => e.SpecialityID).HasColumnName("specialityid");
-                entity.Property(e => e.SpecialityName).HasColumnName("specialityname");
+                e.ToTable("topicmodule");
+                e.HasKey(x => x.ModuleID);
+                e.Property(x => x.ModuleID).HasColumnName("moduleid");
+                e.Property(x => x.ModuleName).HasColumnName("modulename");
+                e.Property(x => x.ClusterID).HasColumnName("clusterid");
+                e.Property(x => x.ModuleHeadID).HasColumnName("moduleheadid");
+
+                e.HasOne(x => x.ModuleCluster)
+                 .WithMany(x => x.TopicModules)
+                 .HasForeignKey(x => x.ClusterID);
+
+                e.HasOne(x => x.ModuleHead)
+                 .WithMany(x => x.TopicModules)
+                 .HasForeignKey(x => x.ModuleHeadID)
+                 .OnDelete(DeleteBehavior.SetNull);
             });
 
-            modelBuilder.Entity<Enrollment>(entity =>
+            modelBuilder.Entity<ModuleResource>(e =>
             {
-                entity.ToTable("enrollment");
-                entity.HasKey(e => e.EnrollmentID);
-                entity.Property(e => e.EnrollmentID).HasColumnName("enrollmentid");
-                entity.Property(e => e.StudentID).HasColumnName("studentid");
-                entity.Property(e => e.EnrollmentDate).HasColumnName("enrollmentdate");
+                e.ToTable("moduleresource");
+                e.HasKey(x => x.ResourceID);
+                e.Property(x => x.ResourceID).HasColumnName("resourceid");
+                e.Property(x => x.ModuleID).HasColumnName("moduleid");
+                e.Property(x => x.ResourceType).HasColumnName("resourcetype");
+                e.Property(x => x.ResourceURL).HasColumnName("resourceurl");
 
-                entity.HasOne(e => e.Student)
-                      .WithMany(s => s.Enrollments)
-                      .HasForeignKey(e => e.StudentID);
-            });
-
-            modelBuilder.Entity<ModuleResource>(entity =>
-            {
-                entity.ToTable("moduleresource");
-                entity.HasKey(e => e.ResourceID);
-                entity.Property(e => e.ResourceID).HasColumnName("resourceid");
-                entity.Property(e => e.ModuleID).HasColumnName("moduleid");
-                entity.Property(e => e.ResourceType).HasColumnName("resourcetype");
-                entity.Property(e => e.ResourceURL).HasColumnName("resourceurl");
-
-                entity.HasOne(mr => mr.Module)
-                      .WithMany(m => m.ModuleResources)
-                      .HasForeignKey(mr => mr.ModuleID);
-            });
-
-            modelBuilder.Entity<ChatSession>(entity =>
-            {
-                entity.ToTable("chatsession");
-                entity.HasKey(e => e.ChatSessionID);
-                entity.Property(e => e.ChatSessionID).HasColumnName("chatsessionid");
-                entity.Property(e => e.StudentID).HasColumnName("studentid");
-                entity.Property(e => e.Topic).HasColumnName("topic");
-                entity.Property(e => e.StartedAt).HasColumnName("startedat");
-                entity.Property(e => e.EndedAt).HasColumnName("endedat");
-
-                entity.HasOne(cs => cs.Student)
-                      .WithMany(s => s.ChatSessions)
-                      .HasForeignKey(cs => cs.StudentID);
-            });
-
-            modelBuilder.Entity<ChatMessage>(entity =>
-            {
-                entity.ToTable("chatmessages");
-                entity.HasKey(e => e.ChatMessageID);
-                entity.Property(e => e.ChatMessageID).HasColumnName("chatmessageid");
-                entity.Property(e => e.ChatSessionID).HasColumnName("chatsessionid");
-                entity.Property(e => e.IsFromStudent).HasColumnName("isfromstudent");
-                entity.Property(e => e.MessageText).HasColumnName("messagetext");
-                entity.Property(e => e.SentAt).HasColumnName("sentat");
-
-                entity.HasOne(cm => cm.ChatSession)
-                      .WithMany(cs => cs.Messages)
-                      .HasForeignKey(cm => cm.ChatSessionID);
-            });
-
-            modelBuilder.Entity<ForumTopic>(entity =>
-            {
-                entity.ToTable("forumtopic");
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Id).HasColumnName("id");
-                entity.Property(e => e.Title).HasColumnName("title");
-                entity.Property(e => e.Subject).HasColumnName("subject");
-                entity.Property(e => e.Description).HasColumnName("description");
-                entity.Property(e => e.Contributions).HasColumnName("contributions");
-                entity.Property(e => e.Progress).HasColumnName("progress");
-                entity.Property(e => e.CreatedAt).HasColumnName("createdat");
-            });
-
-            modelBuilder.Entity<Reply>(entity =>
-            {
-                entity.ToTable("reply");
-                entity.HasKey(e => e.ReplyID);
-                entity.Property(e => e.ReplyID).HasColumnName("replyid");
-                entity.Property(e => e.ForumTopicId).HasColumnName("forumtopicid");
-                entity.Property(e => e.Author).HasColumnName("author");
-                entity.Property(e => e.Message).HasColumnName("message");
-                entity.Property(e => e.PostedAt).HasColumnName("postedat");
-
-                entity.HasOne(r => r.ForumTopic)
-                      .WithMany(ft => ft.Replies)
-                      .HasForeignKey(r => r.ForumTopicId);
-            });
-
-            modelBuilder.Entity<Session>(entity =>
-            {
-                entity.ToTable("session");
-                entity.HasKey(e => e.SessionID);
-                entity.Property(e => e.SessionID).HasColumnName("sessionid");
-                entity.Property(e => e.SessionTopic).HasColumnName("sessiontopic");
-            });
-
-            modelBuilder.Entity<Rating>(entity =>
-            {
-                entity.ToTable("rating");
-                entity.HasKey(e => e.RatingID);
-                entity.Property(e => e.RatingID).HasColumnName("ratingid");
-                entity.Property(e => e.RatingValue).HasColumnName("ratingvalue");
+                e.HasOne(x => x.Module)
+                 .WithMany(x => x.ModuleResources)
+                 .HasForeignKey(x => x.ModuleID);
             });
 
             // =========================
-            // Join Tables
+            // Users & Enrolment
             // =========================
-
-            modelBuilder.Entity<DegreeModule>(entity =>
+            modelBuilder.Entity<Enrollment>(e =>
             {
-                entity.ToTable("degreemodule");
-                entity.HasKey(dm => new { dm.DegreeID, dm.ModuleID });
-                entity.Property(dm => dm.DegreeID).HasColumnName("degreeid");
-                entity.Property(dm => dm.ModuleID).HasColumnName("moduleid");
+                e.ToTable("enrollment");
+                e.HasKey(x => x.EnrollmentID);
+                e.Property(x => x.EnrollmentID).HasColumnName("enrollmentid");
+                e.Property(x => x.StudentID).HasColumnName("studentid");
+                e.Property(x => x.EnrollmentDate).HasColumnName("enrollmentdate");
 
-                entity.HasOne(dm => dm.Degree)
-                      .WithMany(d => d.DegreeModules)
-                      .HasForeignKey(dm => dm.DegreeID);
-
-                entity.HasOne(dm => dm.Module)
-                      .WithMany(m => m.DegreeModules)
-                      .HasForeignKey(dm => dm.ModuleID);
+                e.HasOne(x => x.Student)
+                 .WithMany(x => x.Enrollments)
+                 .HasForeignKey(x => x.StudentID);
             });
 
-            modelBuilder.Entity<StudentTutor>(entity =>
+            modelBuilder.Entity<EnrollmentDegree>(e =>
             {
-                entity.ToTable("studenttutor");
-                entity.HasKey(st => new { st.StudentID, st.TutorID });
-                entity.Property(st => st.StudentID).HasColumnName("studentid");
-                entity.Property(st => st.TutorID).HasColumnName("tutorid");
+                e.ToTable("enrollmentdegree");
+                e.HasKey(x => new { x.EnrollmentID, x.DegreeID });
+                e.Property(x => x.EnrollmentID).HasColumnName("enrollmentid");
+                e.Property(x => x.DegreeID).HasColumnName("degreeid");
 
-                entity.HasOne(st => st.Student)
-                      .WithMany(s => s.StudentTutors)
-                      .HasForeignKey(st => st.StudentID);
+                e.HasOne(x => x.Enrollment)
+                 .WithMany(x => x.EnrollmentDegrees)
+                 .HasForeignKey(x => x.EnrollmentID);
 
-                entity.HasOne(st => st.Tutor)
-                      .WithMany(t => t.StudentTutors)
-                      .HasForeignKey(st => st.TutorID);
+                e.HasOne(x => x.Degree)
+                 .WithMany(x => x.EnrollmentDegrees)
+                 .HasForeignKey(x => x.DegreeID);
             });
 
-            modelBuilder.Entity<SessionTutor>(entity =>
+            // =========================
+            // Admins
+            // =========================
+            modelBuilder.Entity<Admin>(e =>
             {
-                entity.ToTable("sessiontutor");
-                entity.HasKey(st => new { st.SessionID, st.TutorID });
-                entity.Property(st => st.SessionID).HasColumnName("sessionid");
-                entity.Property(st => st.TutorID).HasColumnName("tutorid");
-
-                entity.HasOne(st => st.Session)
-                      .WithMany(s => s.SessionTutors)
-                      .HasForeignKey(st => st.SessionID);
-
-                entity.HasOne(st => st.Tutor)
-                      .WithMany(t => t.SessionTutors)
-                      .HasForeignKey(st => st.TutorID);
+                e.ToTable("admin");
+                e.HasKey(x => x.AdminID);
+                e.Property(x => x.AdminID).HasColumnName("adminid");
+                e.Property(x => x.AdminName).HasColumnName("adminname");
+                e.Property(x => x.AdminSurname).HasColumnName("adminsurname");
+                e.Property(x => x.AdminPhone).HasColumnName("adminphone");
+                e.Property(x => x.AdminEmail).HasColumnName("adminemail");
+                e.Property(x => x.AdminPasswordHash).HasColumnName("adminpasswordhash");
+                e.Property(x => x.CreatedAt).HasColumnName("createdat");
+                e.Property(x => x.IsSuperAdmin).HasColumnName("issuperadmin");
             });
 
-            modelBuilder.Entity<SessionStudent>(entity =>
+            // =========================
+            // Forums
+            // =========================
+            modelBuilder.Entity<ForumTopic>(e =>
             {
-                entity.ToTable("sessionstudent");
-                entity.HasKey(ss => new { ss.SessionID, ss.StudentID });
-                entity.Property(ss => ss.SessionID).HasColumnName("sessionid");
-                entity.Property(ss => ss.StudentID).HasColumnName("studentid");
-
-                entity.HasOne(ss => ss.Session)
-                      .WithMany(s => s.SessionStudents)
-                      .HasForeignKey(ss => ss.SessionID);
-
-                entity.HasOne(ss => ss.Student)
-                      .WithMany(s => s.SessionStudents)
-                      .HasForeignKey(ss => ss.StudentID);
+                e.ToTable("forumtopic");
+                e.HasKey(x => x.Id);
+                e.Property(x => x.Id).HasColumnName("id");
+                e.Property(x => x.Title).HasColumnName("title");
+                e.Property(x => x.Subject).HasColumnName("subject");
+                e.Property(x => x.Description).HasColumnName("description");
+                e.Property(x => x.Contributions).HasColumnName("contributions");
+                e.Property(x => x.Progress).HasColumnName("progress");
+                e.Property(x => x.CreatedAt).HasColumnName("createdat");
             });
 
-            modelBuilder.Entity<EnrollmentDegree>(entity =>
+            modelBuilder.Entity<Reply>(e =>
             {
-                entity.ToTable("enrollmentdegree");
-                entity.HasKey(ed => new { ed.EnrollmentID, ed.DegreeID });
-                entity.Property(ed => ed.EnrollmentID).HasColumnName("enrollmentid");
-                entity.Property(ed => ed.DegreeID).HasColumnName("degreeid");
+                e.ToTable("reply");
+                e.HasKey(x => x.ReplyID);
+                e.Property(x => x.ReplyID).HasColumnName("replyid");
+                e.Property(x => x.ForumTopicId).HasColumnName("forumtopicid");
+                e.Property(x => x.Author).HasColumnName("author");
+                e.Property(x => x.Message).HasColumnName("message");
+                e.Property(x => x.PostedAt).HasColumnName("postedat");
 
-                entity.HasOne(ed => ed.Enrollment)
-                      .WithMany(e => e.EnrollmentDegrees)
-                      .HasForeignKey(ed => ed.EnrollmentID);
-
-                entity.HasOne(ed => ed.Degree)
-                      .WithMany(d => d.EnrollmentDegrees)
-                      .HasForeignKey(ed => ed.DegreeID);
+                e.HasOne(x => x.ForumTopic)
+                 .WithMany(x => x.Replies)
+                 .HasForeignKey(x => x.ForumTopicId);
             });
 
-            modelBuilder.Entity<SessionRating>(entity =>
+            // =========================
+            // Announcements
+            // =========================
+            modelBuilder.Entity<Announcement>(e =>
             {
-                entity.ToTable("sessionrating");
-                entity.HasKey(sr => new { sr.SessionID, sr.RatingID });
-                entity.Property(sr => sr.SessionID).HasColumnName("sessionid");
-                entity.Property(sr => sr.RatingID).HasColumnName("ratingid");
+                e.ToTable("announcements");
+                e.HasKey(x => x.AnnouncementID);
+                e.Property(x => x.AnnouncementID).HasColumnName("announcementid");
+                e.Property(x => x.Topic).HasColumnName("topic");
+                e.Property(x => x.Discussion).HasColumnName("discussion");
+                e.Property(x => x.Progress).HasColumnName("progress"); // CHECK in DB
+                e.Property(x => x.CreatedAt).HasColumnName("createdat");
+                e.Property(x => x.AdminID).HasColumnName("adminid");
 
-                entity.HasOne(sr => sr.Session)
-                      .WithMany(s => s.SessionRatings)
-                      .HasForeignKey(sr => sr.SessionID);
+                e.HasOne(x => x.Admin)
+                 .WithMany()
+                 .HasForeignKey(x => x.AdminID);
+            });
 
-                entity.HasOne(sr => sr.Rating)
-                      .WithMany(r => r.SessionRatings)
-                      .HasForeignKey(sr => sr.RatingID);
+            modelBuilder.Entity<ReplyAnnouncement>(e =>
+            {
+                e.ToTable("replyannouncements");
+                e.HasKey(x => x.ReplyID);
+                e.Property(x => x.ReplyID).HasColumnName("replyid");
+                e.Property(x => x.AnnouncementID).HasColumnName("announcementid");
+                e.Property(x => x.ReplyText).HasColumnName("replytext");
+                e.Property(x => x.PostedAt).HasColumnName("postedat");
+
+                e.HasOne(x => x.Announcement)
+                 .WithMany(x => x.Replies)
+                 .HasForeignKey(x => x.AnnouncementID);
+            });
+
+            // =========================
+            // Sessions & Ratings
+            // =========================
+            modelBuilder.Entity<Session>(e =>
+            {
+                e.ToTable("session");
+                e.HasKey(x => x.SessionID);
+                e.Property(x => x.SessionID).HasColumnName("sessionid");
+                e.Property(x => x.SessionTopic).HasColumnName("sessiontopic");
+            });
+
+            modelBuilder.Entity<Rating>(e =>
+            {
+                e.ToTable("rating");
+                e.HasKey(x => x.RatingID);
+                e.Property(x => x.RatingID).HasColumnName("ratingid");
+                e.Property(x => x.RatingValue).HasColumnName("ratingvalue");
+            });
+
+            modelBuilder.Entity<SessionRating>(e =>
+            {
+                e.ToTable("sessionrating");
+                e.HasKey(x => new { x.SessionID, x.RatingID });
+                e.Property(x => x.SessionID).HasColumnName("sessionid");
+                e.Property(x => x.RatingID).HasColumnName("ratingid");
+
+                e.HasOne(x => x.Session)
+                 .WithMany(x => x.SessionRatings)
+                 .HasForeignKey(x => x.SessionID);
+
+                e.HasOne(x => x.Rating)
+                 .WithMany(x => x.SessionRatings)
+                 .HasForeignKey(x => x.RatingID);
+            });
+
+            modelBuilder.Entity<SessionTutor>(e =>
+            {
+                e.ToTable("sessiontutor");
+                e.HasKey(x => new { x.SessionID, x.TutorID });
+                e.Property(x => x.SessionID).HasColumnName("sessionid");
+                e.Property(x => x.TutorID).HasColumnName("tutorid");
+
+                e.HasOne(x => x.Session)
+                 .WithMany(x => x.SessionTutors)
+                 .HasForeignKey(x => x.SessionID);
+
+                e.HasOne(x => x.Tutor)
+                 .WithMany(x => x.SessionTutors)
+                 .HasForeignKey(x => x.TutorID);
+            });
+
+            modelBuilder.Entity<SessionStudent>(e =>
+            {
+                e.ToTable("sessionstudent");
+                e.HasKey(x => new { x.SessionID, x.StudentID });
+                e.Property(x => x.SessionID).HasColumnName("sessionid");
+                e.Property(x => x.StudentID).HasColumnName("studentid");
+
+                e.HasOne(x => x.Session)
+                 .WithMany(x => x.SessionStudents)
+                 .HasForeignKey(x => x.SessionID);
+
+                e.HasOne(x => x.Student)
+                 .WithMany(x => x.SessionStudents)
+                 .HasForeignKey(x => x.StudentID);
+            });
+
+            modelBuilder.Entity<StudentTutor>(e =>
+            {
+                e.ToTable("studenttutor");
+                e.HasKey(x => new { x.StudentID, x.TutorID });
+                e.Property(x => x.StudentID).HasColumnName("studentid");
+                e.Property(x => x.TutorID).HasColumnName("tutorid");
+
+                e.HasOne(x => x.Student)
+                 .WithMany(x => x.StudentTutors)
+                 .HasForeignKey(x => x.StudentID);
+
+                e.HasOne(x => x.Tutor)
+                 .WithMany(x => x.StudentTutors)
+                 .HasForeignKey(x => x.TutorID);
+            });
+
+            // =========================
+            // Chat
+            // =========================
+            modelBuilder.Entity<ChatSession>(e =>
+            {
+                e.ToTable("chatsession");
+                e.HasKey(x => x.ChatSessionID);
+                e.Property(x => x.ChatSessionID).HasColumnName("chatsessionid");
+                e.Property(x => x.StudentID).HasColumnName("studentid");
+                e.Property(x => x.Topic).HasColumnName("topic");
+                e.Property(x => x.StartedAt).HasColumnName("startedat");
+                e.Property(x => x.EndedAt).HasColumnName("endedat");
+
+                e.HasOne(x => x.Student)
+                 .WithMany(x => x.ChatSessions)
+                 .HasForeignKey(x => x.StudentID);
+            });
+
+            modelBuilder.Entity<ChatMessage>(e =>
+            {
+                e.ToTable("chatmessages");
+                e.HasKey(x => x.ChatMessageID);
+
+                e.Property(x => x.ChatMessageID).HasColumnName("chatmessageid");
+                e.Property(x => x.ChatSessionID).HasColumnName("chatsessionid");
+                e.Property(x => x.MessageText).HasColumnName("messagetext");
+                e.Property(x => x.SentAt).HasColumnName("sentat");
+
+                // Nullable FKs (match DB NULLs)
+                e.Property(x => x.SenderStudentID).HasColumnName("senderstudentid");
+                e.Property(x => x.SenderTutorID).HasColumnName("sendertutorid");
+                e.Property(x => x.ReceiverStudentID).HasColumnName("receiverstudentid");
+                e.Property(x => x.ReceiverTutorID).HasColumnName("receivertutorid");
+
+                // ChatSession → ChatMessages (required)
+                e.HasOne(x => x.ChatSession)
+                 .WithMany(x => x.Messages)        // or .WithMany() if ChatSession has no nav
+                 .HasForeignKey(x => x.ChatSessionID)
+                 .OnDelete(DeleteBehavior.Cascade);
+
+                // Sender: Student (optional)
+                e.HasOne(x => x.SenderStudent)
+                 .WithMany()                        // no back-collection; avoids ambiguity
+                 .HasForeignKey(x => x.SenderStudentID)
+                 .OnDelete(DeleteBehavior.Restrict) // prevent cascade cycles
+                 .IsRequired(false);
+
+                // Sender: Tutor (optional)
+                e.HasOne(x => x.SenderTutor)
+                 .WithMany()
+                 .HasForeignKey(x => x.SenderTutorID)
+                 .OnDelete(DeleteBehavior.Restrict)
+                 .IsRequired(false);
+
+                // Receiver: Student (optional)
+                e.HasOne(x => x.ReceiverStudent)
+                 .WithMany()
+                 .HasForeignKey(x => x.ReceiverStudentID)
+                 .OnDelete(DeleteBehavior.Restrict)
+                 .IsRequired(false);
+
+                // Receiver: Tutor (optional)
+                e.HasOne(x => x.ReceiverTutor)
+                 .WithMany()
+                 .HasForeignKey(x => x.ReceiverTutorID)
+                 .OnDelete(DeleteBehavior.Restrict)
+                 .IsRequired(false);
+            });
+
+
+            // =========================
+            // Module planning
+            // =========================
+            modelBuilder.Entity<ModulePlan>(e =>
+            {
+                e.ToTable("moduleplan");
+                e.HasKey(x => x.ModuleID);
+                e.Property(x => x.ModuleID).HasColumnName("moduleid");
+                e.Property(x => x.TotalWeeks).HasColumnName("totalweeks");
+                e.Property(x => x.TestsAllowed).HasColumnName("testsallowed");
+                e.Property(x => x.AssignmentsRequired).HasColumnName("assignmentsrequired");
+                e.Property(x => x.ProjectsRequired).HasColumnName("projectsrequired");
+
+                e.HasOne<TopicModule>()
+                 .WithOne()
+                 .HasForeignKey<ModulePlan>(x => x.ModuleID);
+            });
+
+            modelBuilder.Entity<ModuleWeek>(e =>
+            {
+                e.ToTable("moduleweek");
+                e.HasKey(x => x.WeekID);
+                e.Property(x => x.WeekID).HasColumnName("weekid");
+                e.Property(x => x.ModuleID).HasColumnName("moduleid");
+                e.Property(x => x.WeekNumber).HasColumnName("weeknumber");
+
+                e.HasOne<TopicModule>()
+                 .WithMany()
+                 .HasForeignKey(x => x.ModuleID);
+
+                e.HasIndex(x => new { x.ModuleID, x.WeekNumber }).IsUnique();
+            });
+
+            modelBuilder.Entity<WeekContent>(e =>
+            {
+                e.ToTable("weekcontent");
+                e.HasKey(x => x.ContentID);
+                e.Property(x => x.ContentID).HasColumnName("contentid");
+                e.Property(x => x.WeekID).HasColumnName("weekid");
+                e.Property(x => x.ContentTitle).HasColumnName("contenttitle");
+                e.Property(x => x.PdfURL).HasColumnName("pdfurl");
+                e.Property(x => x.PdfFile).HasColumnName("pdffile");
+                e.Property(x => x.PdfMime).HasColumnName("pdfmime");
+                e.Property(x => x.PdfSizeBytes).HasColumnName("pdfsizebytes");
+
+                e.HasOne<ModuleWeek>()
+                 .WithMany()
+                 .HasForeignKey(x => x.WeekID);
+            });
+
+            modelBuilder.Entity<ModuleAssignment>(e =>
+            {
+                e.ToTable("moduleassignments");
+                e.HasKey(x => x.AssignmentID);
+                e.Property(x => x.AssignmentID).HasColumnName("assignmentid");
+                e.Property(x => x.ModuleID).HasColumnName("moduleid");
+                e.Property(x => x.AssignmentTitle).HasColumnName("assignmenttitle");
+                e.Property(x => x.AssignmentPdfURL).HasColumnName("assignmentpdfurl");
+                e.Property(x => x.AssignmentPdf).HasColumnName("assignmentpdf");
+                e.Property(x => x.AssignmentPdfMime).HasColumnName("assignmentpdfmime");
+                e.Property(x => x.AssignmentPdfSizeBytes).HasColumnName("assignmentpdfsizebytes");
+                e.Property(x => x.DateDue).HasColumnName("datedue");
+                e.Property(x => x.AssignmentUploadPdfURL).HasColumnName("assignmentuploadpdfurl");
+                e.Property(x => x.AssignmentUploadPdf).HasColumnName("assignmentuploadpdf");
+                e.Property(x => x.AssignmentUploadPdfMime).HasColumnName("assignmentuploadpdfmime");
+                e.Property(x => x.AssignmentUploadPdfSizeBytes).HasColumnName("assignmentuploadpdfsizebytes");
+
+                e.HasOne<TopicModule>()
+                 .WithMany()
+                 .HasForeignKey(x => x.ModuleID);
+            });
+
+            modelBuilder.Entity<ModuleProject>(e =>
+            {
+                e.ToTable("moduleprojects");
+                e.HasKey(x => x.ProjectID);
+                e.Property(x => x.ProjectID).HasColumnName("projectid");
+                e.Property(x => x.ModuleID).HasColumnName("moduleid");
+                e.Property(x => x.ProjectTitle).HasColumnName("projecttitle");
+                e.Property(x => x.ProjectPdfURL).HasColumnName("projectpdfurl");
+                e.Property(x => x.ProjectPdf).HasColumnName("projectpdf");
+                e.Property(x => x.ProjectPdfMime).HasColumnName("projectpdfmime");
+                e.Property(x => x.ProjectPdfSizeBytes).HasColumnName("projectpdfsizebytes");
+                e.Property(x => x.DateDue).HasColumnName("datedue");
+                e.Property(x => x.UploadPdfURL).HasColumnName("uploadpdfurl");
+                e.Property(x => x.UploadPdf).HasColumnName("uploadpdf");
+                e.Property(x => x.UploadPdfMime).HasColumnName("uploadpdfmime");
+                e.Property(x => x.UploadPdfSizeBytes).HasColumnName("uploadpdfsizebytes");
+
+                e.HasOne<TopicModule>()
+                 .WithMany()
+                 .HasForeignKey(x => x.ModuleID);
+            });
+
+            modelBuilder.Entity<ModuleTest>(e =>
+            {
+                e.ToTable("moduletests");
+                e.HasKey(x => x.TestID);
+                e.Property(x => x.TestID).HasColumnName("testid");
+                e.Property(x => x.ModuleID).HasColumnName("moduleid");
+                e.Property(x => x.TestTitle).HasColumnName("testtitle");
+                e.Property(x => x.TestWeek).HasColumnName("testweek");
+                e.Property(x => x.TestDate).HasColumnName("testdate");
+
+                e.HasOne<TopicModule>()
+                 .WithMany()
+                 .HasForeignKey(x => x.ModuleID);
+
+                e.HasIndex(x => new { x.ModuleID, x.TestWeek }).IsUnique();
+            });
+
+            // =========================
+            // Degree ↔ Module (join)
+            // =========================
+            modelBuilder.Entity<DegreeModule>(e =>
+            {
+                e.ToTable("degreemodule");
+                e.HasKey(x => new { x.DegreeID, x.ModuleID });
+                e.Property(x => x.DegreeID).HasColumnName("degreeid");
+                e.Property(x => x.ModuleID).HasColumnName("moduleid");
+
+                e.HasOne(x => x.Degree)
+                 .WithMany(x => x.DegreeModules)
+                 .HasForeignKey(x => x.DegreeID);
+
+                e.HasOne(x => x.Module)
+                 .WithMany(x => x.DegreeModules)
+                 .HasForeignKey(x => x.ModuleID);
+            });
+
+            modelBuilder.Entity<MessageUser>(e =>
+            {
+                e.ToTable("messageuser");
+                e.HasKey(x => x.Id);
+                e.Property(x => x.Id).HasColumnName("id");
             });
         }
     }

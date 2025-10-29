@@ -4,14 +4,16 @@ namespace CampusLearn.Models
 {
     public class MessageUser
     {
-        public long ID { get; set; }
+        public long Id { get; set; } // rename from ID → Id
+
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
-        public List<string> Groups { get; set; }
+        public List<string> Groups { get; set; } = new();
         public string Role { get; set; }
     }
+
 
     public class MessageView
     {

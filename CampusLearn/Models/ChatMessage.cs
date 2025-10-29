@@ -1,24 +1,31 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CampusLearn.Models
 {
     public class ChatMessage
     {
-        [Key]
         public long ChatMessageID { get; set; }
 
         [Required]
         public long ChatSessionID { get; set; }
 
-        public ChatSession ChatSession { get; set; }
-
         [Required]
-        public bool IsFromStudent { get; set; }
+        public string MessageText { get; set; } = string.Empty;
 
-        [Required]
-        public string MessageText { get; set; }
+        public DateTime SentAt { get; set; }
 
-        public DateTime SentAt { get; set; } = DateTime.UtcNow;
+        // Optional FKs (match DB nullability)
+        public long? SenderStudentID { get; set; }
+        public long? SenderTutorID { get; set; }
+        public long? ReceiverStudentID { get; set; }
+        public long? ReceiverTutorID { get; set; }
+
+        // Navigations
+        public ChatSession ChatSession { get; set; } = null!;
+        public Student? SenderStudent { get; set; }
+        public Tutor? SenderTutor { get; set; }
+        public Student? ReceiverStudent { get; set; }
+        public Tutor? ReceiverTutor { get; set; }
     }
+
 }
