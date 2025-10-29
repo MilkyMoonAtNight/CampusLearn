@@ -1,7 +1,7 @@
 ﻿@model ChatViewModel
 @Html.AntiForgeryToken()
 @{
-    var currentUserId = Model.CurrentUserID; // Add this to your model if not already present
+    var currentUserId = Model.CurrentUserID; 
 }
 
 <style>
@@ -22,7 +22,7 @@
     }
 
         .chat-bubble.sent {
-            background-color: #e0d4f7; /* soft purple */
+            background-color: #e0d4f7; 
             color: #333;
             border-top-right-radius: 0;
         }
