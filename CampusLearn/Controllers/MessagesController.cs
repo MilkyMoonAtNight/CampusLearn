@@ -1,15 +1,20 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using CampusLearn.Data;
 using CampusLearn.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace CampusLearn.Controllers
 {
     public class AuthenticatedController : Controller
     {
-        protected int CurrentUserId =>
-            HttpContext.Session.GetInt32("LoggedInUserID")
-            ?? throw new UnauthorizedAccessException("User not logged in");
+        protected long CurrentUserId =>
+            HttpContext.Session.GetInt32("LoggedInUserID") is int v
+                ? v
+                : throw new UnauthorizedAccessException("User not logged in");
     }
 
     public class MessagesController : AuthenticatedController
@@ -21,96 +26,119 @@ namespace CampusLearn.Controllers
             _context = context;
         }
 
-        public IActionResult Test()
+        public IActionResult Test() => View("Test");
+
+        // ---------------------------
+        // Helpers: Groups (Option A)
+        // ---------------------------
+
+        // All module names as "groups"
+        private Task<List<string>> GetAllGroupsAsync()
         {
-            return View("Test");
+            return _context.Modules
+                .Select(m => m.ModuleName)
+                .Distinct()
+                .OrderBy(n => n)
+                .ToListAsync();
         }
 
-        // Combine all users (students + tutors)
-        private List<MessageUser> GetAllUsers()
+        // Only groups for a specific student (if you prefer per-user groups)
+        private Task<List<string>> GetGroupsForStudentAsync(long studentId)
         {
-            var students = _context.Students.Select(s => new MessageUser
-            {
-                ID = s.StudentID,
-                FirstName = s.FirstName,
-                LastName = s.LastName,
-                Email = s.PersonalEmail,
-                PhoneNumber = s.Phone,
-                Role = "Student",
-                Groups = new List<string> { "PRG381", "LPR381", "INF281", "AOT300" }
-            }).ToList();
-
-            var tutors = _context.Tutors.Select(t => new MessageUser
-            {
-                ID = t.TutorID,
-                FirstName = t.TutorName,
-                LastName = t.TutorSurname,
-                Role = "Tutor",
-                Groups = new List<string>() // optional if needed
-            }).ToList();
-
-            return (students ?? new List<MessageUser>())
-                .Concat(tutors ?? new List<MessageUser>())
-                .OrderBy(u => u.FirstName)
-                .ThenBy(u => u.LastName)
-                .ToList();
+            return _context.EnrollmentDegrees
+                .Where(ed => ed.Enrollment.StudentID == studentId)
+                .Select(ed => ed.Degree.DegreeName)
+                .Distinct()
+                .OrderBy(n => n)
+                .ToListAsync();
         }
 
-        // User list with search and filters
-        public async Task<IActionResult> Index(string searchQuery, string roleFilter)
+        // ---------------------------
+        // Build user list
+        // ---------------------------
+        private async Task<List<MessageUser>> GetAllUsersAsync(long currentUserId)
         {
-            var currentUserId = CurrentUserId;
-
             var students = await _context.Students
                 .Where(s => s.StudentID != currentUserId)
                 .Select(s => new MessageUser
                 {
-                    ID = s.StudentID,
+                    Id = s.StudentID,
                     FirstName = s.FirstName,
                     LastName = s.LastName,
-                    Role = "Student"
-                }).ToListAsync();
+                    Email = s.PersonalEmail,
+                    PhoneNumber = s.Phone,
+                    Role = "Student",
+                    // If you want per-student groups, populate later (see optional block below)
+                    Groups = new List<string>()
+                })
+                .ToListAsync();
 
             var tutors = await _context.Tutors
                 .Select(t => new MessageUser
                 {
-                    ID = t.TutorID,
+                    Id = t.TutorID,
                     FirstName = t.TutorName,
                     LastName = t.TutorSurname,
-                    Role = "Tutor"
-                }).ToListAsync();
+                    Role = "Tutor",
+                    Groups = new List<string>()
+                })
+                .ToListAsync();
 
-            var allUsers = students.Concat(tutors).ToList();
+            var all = students.Concat(tutors)
+                .OrderBy(u => u.FirstName)
+                .ThenBy(u => u.LastName)
+                .ToList();
 
-            if (!string.IsNullOrEmpty(searchQuery))
+            return all;
+        }
+
+        // ---------------------------
+        // Index: user list + groups + filters
+        // ---------------------------
+        public async Task<IActionResult> Index(string? searchQuery, string? roleFilter)
+        {
+            var currentUserId = CurrentUserId;
+
+            var allUsers = await GetAllUsersAsync(currentUserId);
+
+            if (!string.IsNullOrWhiteSpace(searchQuery))
             {
                 allUsers = allUsers.Where(u =>
-                    (u.FirstName ?? "").Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-                    (u.LastName ?? "").Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-                    u.ID.ToString().Contains(searchQuery)).ToList();
+                       (u.FirstName ?? "").Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
+                    || (u.LastName ?? "").Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
+                    || u.Id.ToString().Contains(searchQuery)
+                ).ToList();
             }
 
-            if (!string.IsNullOrEmpty(roleFilter))
+            if (!string.IsNullOrWhiteSpace(roleFilter))
             {
                 allUsers = allUsers.Where(u => u.Role == roleFilter).ToList();
             }
+
+            // Option A: all module names as groups
+            var groups = await GetAllGroupsAsync();
 
             var model = new MessageView
             {
                 CurrentUserID = currentUserId,
                 SelectedRecipientID = 0,
                 AllUsers = allUsers,
-                Messages = new List<Message>(),
+                Messages = new List<ChatMessage>(),
                 SearchQuery = searchQuery,
-                RoleFilter = roleFilter
+                RoleFilter = roleFilter,
+                Groups = groups
             };
 
             return View("Index", model);
         }
 
+        // ---------------------------
+        // Chat helpers
+        // ---------------------------
         private long ResolveOtherUserId(string topic, long currentUserId)
         {
-            if (topic.StartsWith("ChatBetween:"))
+            // Topic = "ChatBetween:<smallId>:<bigId>"
+            if (topic.StartsWith("ChatBetween:", StringComparison.Ordinal))
             {
                 var parts = topic.Substring("ChatBetween:".Length).Split(':');
                 if (parts.Length == 2 &&
@@ -123,81 +151,82 @@ namespace CampusLearn.Controllers
             throw new Exception("Invalid topic format");
         }
 
-        // Send message
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SendMessage(long sessionId, string messageText)
+        private MessageUser? GetUserById(long id)
         {
-            var session = await _context.ChatSessions
-                .Include(cs => cs.Messages)
-                .FirstOrDefaultAsync(cs => cs.ChatSessionID == sessionId);
-
-            if (session == null)
-                return NotFound();
-
-            var currentUserId = CurrentUserId;
-
-            if (string.IsNullOrWhiteSpace(messageText))
-                return RedirectToAction("ChatWith", new { id = ResolveOtherUserId(session.Topic, currentUserId) });
-
-            bool isStudent = await _context.Students.AnyAsync(s => s.StudentID == currentUserId);
-
-            var message = new ChatMessage
-            {
-                ChatSessionID = sessionId,
-                IsFromStudent = isStudent,
-                MessageText = messageText,
-                SentAt = DateTime.UtcNow
-            };
-
-            _context.ChatMessages.Add(message);
-            await _context.SaveChangesAsync();
-
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                return Ok();
-
-            return RedirectToAction("ChatWith", new { id = ResolveOtherUserId(session.Topic, currentUserId) });
-        }
-
-        // Get user directly
-        private MessageUser GetUserById(long id)
-        {
-            var student = _context.Students.FirstOrDefault(s => s.StudentID == id);
+            var student = _context.Students.AsNoTracking().FirstOrDefault(s => s.StudentID == id);
             if (student != null)
                 return new MessageUser
                 {
-                    ID = student.StudentID,
+                    Id = student.StudentID,
                     FirstName = student.FirstName,
                     LastName = student.LastName,
                     Email = student.PersonalEmail,
                     PhoneNumber = student.Phone,
-                    Role = "Student"
+                    Role = "Student",
+                    Groups = new List<string>()
                 };
 
-            var tutor = _context.Tutors.FirstOrDefault(t => t.TutorID == id);
+            var tutor = _context.Tutors.AsNoTracking().FirstOrDefault(t => t.TutorID == id);
             if (tutor != null)
                 return new MessageUser
                 {
-                    ID = tutor.TutorID,
+                    Id = tutor.TutorID,
                     FirstName = tutor.TutorName,
                     LastName = tutor.TutorSurname,
-                    Role = "Tutor"
+                    Role = "Tutor",
+                    Groups = new List<string>()
                 };
 
             return null;
         }
 
+        // Ensures ChatSession.StudentID is a real student ID since DB requires NOT NULL
+        private long RequireAnyStudentId(long userAId, long userBId)
+        {
+            var aIsStudent = _context.Students.Any(s => s.StudentID == userAId);
+            if (aIsStudent) return userAId;
+
+            var bIsStudent = _context.Students.Any(s => s.StudentID == userBId);
+            if (bIsStudent) return userBId;
+
+            throw new InvalidOperationException("At least one participant must be a student to create a chat session.");
+        }
+
+        private ChatSession GetOrCreateChatSession(long userAId, long userBId)
+        {
+            var small = Math.Min(userAId, userBId);
+            var big = Math.Max(userAId, userBId);
+            var normalizedTopic = $"ChatBetween:{small}:{big}";
+
+            var session = _context.ChatSessions
+                .Include(cs => cs.Messages)
+                .FirstOrDefault(cs => cs.Topic == normalizedTopic);
+
+            if (session == null)
+            {
+                session = new ChatSession
+                {
+                    StudentID = RequireAnyStudentId(userAId, userBId),
+                    Topic = normalizedTopic,
+                    StartedAt = DateTime.UtcNow
+                };
+                _context.ChatSessions.Add(session);
+                _context.SaveChanges();
+            }
+
+            return session;
+        }
+
+        // ---------------------------
         // Open chat with another user
+        // ---------------------------
         public IActionResult ChatWith(long id)
         {
             var currentUserId = CurrentUserId;
             var targetUser = GetUserById(id);
-
-            if (targetUser == null)
-                return NotFound();
+            if (targetUser == null) return NotFound();
 
             var session = GetOrCreateChatSession(currentUserId, id);
-            bool isStudent = _context.Students.Any(s => s.StudentID == currentUserId);
 
             var viewModel = new ChatViewModel
             {
@@ -210,30 +239,9 @@ namespace CampusLearn.Controllers
             return View(viewModel);
         }
 
-        private ChatSession GetOrCreateChatSession(long userAId, long userBId)
-        {
-            var normalizedTopic = $"ChatBetween:{Math.Min(userAId, userBId)}:{Math.Max(userAId, userBId)}";
-
-            var session = _context.ChatSessions
-                .Include(cs => cs.Messages)
-                .FirstOrDefault(cs => cs.Topic == normalizedTopic);
-
-            if (session == null)
-            {
-                session = new ChatSession
-                {
-                    StudentID = userAId,
-                    //TutorID = userBId, // Requires DB column
-                    Topic = normalizedTopic,
-                    StartedAt = DateTime.UtcNow
-                };
-                _context.ChatSessions.Add(session);
-                _context.SaveChanges();
-            }
-
-            return session;
-        }
-
+        // ---------------------------
+        // Ajax: get messages in a session
+        // ---------------------------
         [HttpGet]
         public async Task<IActionResult> GetMessages(long sessionId)
         {
@@ -248,5 +256,73 @@ namespace CampusLearn.Controllers
             ViewBag.IsCurrentUserStudent = isStudent;
             return PartialView("_ChatMessagesPartial", messages);
         }
+
+        // ---------------------------
+        // Send message
+        // ---------------------------
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SendMessage(long sessionId, string messageText)
+        {
+            var session = await _context.ChatSessions
+                .Include(cs => cs.Messages)
+                .FirstOrDefaultAsync(cs => cs.ChatSessionID == sessionId);
+
+            if (session == null) return NotFound();
+
+            var currentUserId = CurrentUserId;
+
+            if (string.IsNullOrWhiteSpace(messageText))
+                return RedirectToAction("ChatWith", new { id = ResolveOtherUserId(session.Topic, currentUserId) });
+
+            var isStudent = await _context.Students.AnyAsync(s => s.StudentID == currentUserId);
+
+            var message = new ChatMessage
+            {
+                ChatSessionID = sessionId,
+                MessageText = messageText,
+                SentAt = DateTime.UtcNow,
+                SenderStudentID = isStudent ? currentUserId : null,
+                SenderTutorID = isStudent ? null : currentUserId
+                // Optionally set Receiver* if you add direct addressing in UI
+            };
+
+            _context.ChatMessages.Add(message);
+            await _context.SaveChangesAsync();
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return Ok();
+
+            return RedirectToAction("ChatWith", new { id = ResolveOtherUserId(session.Topic, currentUserId) });
+        }
+    }
+
+    // ============================
+    // ViewModels (kept in this file)
+    // ============================
+    public class MessageView
+    {
+        public long CurrentUserID { get; set; }
+        public long SelectedRecipientID { get; set; }
+
+        public List<MessageUser> AllUsers { get; set; } = new();
+        public List<ChatMessage> Messages { get; set; } = new();
+
+        public string? SearchQuery { get; set; }
+        public string? RoleFilter { get; set; }
+
+        // Populated from DB (Option A)
+        public IReadOnlyList<string> Groups { get; set; } = Array.Empty<string>();
+
+        public MessageUser? TargetUser =>
+            AllUsers?.FirstOrDefault(u => u.Id == SelectedRecipientID);
+    }
+
+    public class ChatViewModel
+    {
+        public MessageUser TargetUser { get; set; } = new();
+        public List<ChatMessage> Messages { get; set; } = new();
+        public long CurrentUserID { get; set; }
+        public long ChatSessionID { get; set; }
     }
 }
