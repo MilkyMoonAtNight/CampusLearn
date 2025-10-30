@@ -8,7 +8,7 @@
     💬
 </button>
 
-<!-- Chat popup (starts hidden) -->
+
 <div id="chatPopup" class="chat-popup hidden" style="position:fixed;bottom:90px;right:20px;z-index:9999;width:360px;max-height:520px;background:#fff;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.12);display:flex;flex-direction:column;overflow:hidden;">
     <div class="ai-chat__header" style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#0078D7;color:#fff;">
         <strong>CampusLearn Support</strong>
@@ -16,7 +16,7 @@
     </div>
 
     <div id="chatMessages" class="ai-chat__messages" style="padding:12px;overflow-y:auto;height:340px;display:flex;flex-direction:column;gap:8px;background:#f7f9fb;">
-        <!-- initial greeting -->
+       
         <div class="ai-msg ai-msg--ai" style="max-width:75%;background:#e9e9e9;color:#333;padding:8px 12px;border-radius:12px;">
             Hi! I’m your CampusLearn assistant. Ask me anything about this module.
         </div>
@@ -140,6 +140,21 @@
                 // fetch('/api/tutor/notify', { method: 'POST', body: JSON.stringify({ message: text }) });
                 return;
             }
+
+                if (normalized.includes('sen 381')) {
+                 const moduleDescription = `
+             📘 **SEN 381 – Software Engineering 381**
+                This module focuses on *advanced software engineering concepts*, including:
+               - Software design patterns and architecture
+               - Agile methodologies and version control
+               - Testing, CI/CD pipelines, and documentation
+               - Practical group project using modern frameworks
+
+                 It equips students with hands-on experience in building scalable, maintainable applications.
+               `;
+                  appendMessage('ai', moduleDescription.trim());
+                  return;
+              }
 
             // show temporary thinking message
             appendMessage('ai', 'Thinking...', true);

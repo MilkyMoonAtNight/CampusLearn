@@ -1,103 +1,100 @@
 ﻿@model IEnumerable<CampusLearn.Models.ForumTopic>
+
 @{
     ViewData["Title"] = "Forums";
 }
 
 <style>
-    .forums-container {
+    .forum-container {
         max-width: 1000px;
-        margin: auto;
+        margin: 40px auto;
         padding: 20px;
         font-family: 'Segoe UI', sans-serif;
     }
 
-    .header-section {
+    .forum-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 30px;
+        margin-bottom: 25px;
     }
 
-    .search-bar input {
-        padding: 10px;
-        width: 300px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-    }
+        .forum-header h2 {
+            color: #333;
+            font-weight: 700;
+        }
 
-    .btn-anonymous {
-        background-color: #0078D7;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-    }
+        .forum-header a {
+            background-color: #6a0dad;
+            color: #fff;
+            padding: 8px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
 
-    .featured-section {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 20px;
-        margin-bottom: 40px;
-    }
+            .forum-header a:hover {
+                background-color: #580b9e;
+            }
 
     .forum-card {
-        background-color: #f0f0f0;
-        border-left: 8px solid #0078D7;
-        padding: 20px;
+        background-color: #f8f8ff;
         border-radius: 10px;
-        position: relative;
+        padding: 18px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        transition: transform 0.15s ease;
     }
 
-        .forum-card h3 {
-            margin-top: 0;
+        .forum-card:hover {
+            transform: scale(1.01);
         }
 
-        .forum-card .bell-icon {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 20px;
-            color: #0078D7;
-        }
+    .forum-title {
+        font-size: 1.2em;
+        color: #6a0dad;
+        font-weight: bold;
+        text-decoration: none;
+    }
 
-    .old-forums {
-        margin-top: 40px;
-        font-style: italic;
-        color: #666;
+    .forum-subject {
+        font-size: 0.95em;
+        color: #555;
+    }
+
+    .forum-meta {
+        font-size: 0.8em;
+        color: #888;
+        margin-top: 8px;
     }
 </style>
 
-<div class="forums-container">
-    <!-- Header -->
-    <div class="header-section">
-        <div class="search-bar">
-            <input type="text" placeholder="Search forums..." />
-        </div>
-        <a asp-controller="Forum" asp-action="Add" class="btn-anonymous">
-            ➕ New Forum
-        </a>
-
+<div class="forum-container">
+    <div class="forum-header">
+        <h2>Forum Discussions</h2>
+        <a asp-controller="Forum" asp-action="Add">+ New Topic</a>
     </div>
 
-    <!-- Featured Forums -->
-    @for (int i = 0; i < Model.Count(); i++)
+    @if (Model.Any())
     {
-        var topic = Model.ElementAt(i);
-        <a asp-controller="Forum" asp-action="Details" asp-route-id="@i" style="text-decoration:none; color:inherit;">
+        foreach (var topic in Model)
+        {
             <div class="forum-card">
-                <span class="bell-icon">🔔</span>
-                <h3>@topic.Title</h3>
-                <p><strong>Discussion:</strong> @topic.Description</p>
-                <p><strong>Contributions:</strong> @topic.Contributions</p>
-                <p><strong>Progress:</strong> @topic.Progress</p>
+                <a asp-controller="Forum" asp-action="Details" asp-route-id="@topic.Id" class="forum-title">
+                    @topic.Title
+                </a>
+                <div class="forum-subject">@topic.Subject</div>
+                <div class="forum-meta">
+                    Posted: @topic.CreatedAt.ToShortDateString() |
+                    Replies: @topic.Replies?.Count() ?? 0 |
+                    Status: @topic.Progress
+                </div>
             </div>
-        </a>
+        }
     }
-
-
-    <!-- Old Forums -->
-    <div class="old-forums">
-        <h4>Old Forums</h4>
-        <p>Archived discussions and legacy threads will appear here.</p>
-    </div>
+    else
+    {
+        <p>No forum topics yet. Start one!</p>
+    }
 </div>

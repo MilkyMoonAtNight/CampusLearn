@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CampusLearn.Models
 {
@@ -17,23 +18,29 @@ namespace CampusLearn.Models
         [Required]
         public string Description { get; set; } = string.Empty; //added string.Empty
 
-        public string Author { get; set; } = string.Empty; //added string.Empty
-
         public int Contributions { get; set; } = 0;
 
         public string Progress { get; set; } = "Fresh";
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; }
 
         public ICollection<Reply> Replies { get; set; } = new List<Reply>(); //Added new List<Reply>()
     }
-    public class Reply
+  
+
+public class Reply
     {
         public int ReplyID { get; set; }
+
         public int ForumTopicId { get; set; }
+
         public string Author { get; set; } = string.Empty;
+
         public string Message { get; set; } = string.Empty;
-        public DateTime PostedAt { get; set; } = DateTime.Now;
+
+        // ✅ Explicitly mark as UTC timestamp for PostgreSQL compatibility
+        [Column(TypeName = "timestamp with time zone")]
+        public DateTime PostedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation property
         public ForumTopic? ForumTopic { get; set; }

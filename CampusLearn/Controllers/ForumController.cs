@@ -1,73 +1,101 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using CampusLearn.Models; 
+using CampusLearn.Data;
+using CampusLearn.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 
 namespace CampusLearn.Controllers
 {
     public class ForumController : Controller
     {
-        private static List<ForumTopic> _topics = new List<ForumTopic>
-        {
-            new ForumTopic { Id = 0, Title = "PRG162", Description = "Will we use C# ever again?", Contributions = 24, Progress = "Solved" },
-            new ForumTopic { Id = 1, Title = "Databases", Description = "Databases moving to NoSQL", Contributions = 46, Progress = "Pending" },
-            new ForumTopic { Id = 2, Title = "4th Year internships", Description = "What is the starting salary", Contributions = 12, Progress = "Fresh" }
-        };
+        private readonly CampusLearnContext _context;
 
-        public IActionResult Index()
+        public ForumController(CampusLearnContext context)
         {
-            return View(_topics);
+            _context = context;
         }
 
+        // =========================
+        // Index - list all forum topics
+        // =========================
+        public async Task<IActionResult> Index()
+        {
+            var topics = await _context.ForumTopics
+                .Include(t => t.Replies)
+                .OrderByDescending(t => t.CreatedAt)
+                .ToListAsync();
+
+            return View(topics);
+        }
+
+        // =========================
+        // Add (GET)
+        // =========================
         [HttpGet]
         public IActionResult Add()
         {
-            if(string.IsNullOrEmpty(HttpContext.Session.GetString("LoggedInUser")))
-            {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("LoggedInUser")))
                 return RedirectToAction("Index", "LogIn");
-            }
+
             return View();
         }
 
-        private static int _nextId = 3;
-
+        // =========================
+        // Add (POST)
+        // =========================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Add(ForumTopic topic)
+        public async Task<IActionResult> Add([Bind("Title,Subject,Description")] ForumTopic topic)
         {
             if (!ModelState.IsValid)
+                return View(topic);
+
+            topic.CreatedAt = DateTime.UtcNow;
+            topic.Progress = "Fresh";
+            topic.Contributions = 0;
+
+            try
             {
-                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-                Console.WriteLine("Validation errors: " + string.Join(", ", errors));
+                _context.ForumTopics.Add(topic);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                ModelState.AddModelError("", "An error occurred while creating the topic.");
                 return View(topic);
             }
-
-            topic.Id = _nextId++;
-            topic.Replies = new List<Reply>();
-            topic.Author = HttpContext.Session.GetString("LoggedInUser") ?? "Anonymous";
-            _topics.Add(topic);
-
-            return RedirectToAction("Index");
         }
 
-        public IActionResult Details(int id)
+        // =========================
+        // Details (Topic with Replies)
+        // =========================
+        public async Task<IActionResult> Details(int id)
         {
-            if (id < 0 || id >= _topics.Count)
+            var topic = await _context.ForumTopics
+                .Include(t => t.Replies)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (topic == null)
                 return NotFound();
 
-            var topic = _topics[id];
             return View(topic);
         }
+
+        // =========================
+        // Add Reply
+        // =========================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult AddReply(int id, string message)
+        public async Task<IActionResult> AddReply(int id, string message)
         {
-            if (id < 0 || id >= _topics.Count)
-                return NotFound();
-
-            if(string.IsNullOrEmpty(message))
+            if (string.IsNullOrWhiteSpace(message))
             {
                 ModelState.AddModelError("Message", "Message cannot be empty.");
-                return View("Details", _topics[id]);
+                var topic = await _context.ForumTopics
+                    .Include(t => t.Replies)
+                    .FirstOrDefaultAsync(t => t.Id == id);
+                return View("Details", topic);
             }
 
             var author = HttpContext.Session.GetString("LoggedInUser") ?? "Anonymous";
@@ -77,13 +105,33 @@ namespace CampusLearn.Controllers
                 ForumTopicId = id,
                 Author = author,
                 Message = message,
-                PostedAt = DateTime.Now
+                PostedAt = DateTime.UtcNow // ✅ Always use UTC for PostgreSQL
             };
 
-            _topics[id].Replies.Add(reply);
-            _topics[id].Contributions++;
+            try
+            {
+                _context.Replies.Add(reply);
 
-            return RedirectToAction("Details", new { id });
+                // Update contribution count
+                var topic = await _context.ForumTopics.FirstOrDefaultAsync(t => t.Id == id);
+                if (topic != null)
+                {
+                    topic.Contributions++;
+                    _context.ForumTopics.Update(topic);
+                }
+
+                await _context.SaveChangesAsync();
+                return RedirectToAction("Details", new { id });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error adding reply: {ex.Message}");
+                ModelState.AddModelError("", "An error occurred while saving your reply.");
+                var topicForError = await _context.ForumTopics
+                    .Include(t => t.Replies)
+                    .FirstOrDefaultAsync(t => t.Id == id);
+                return View("Details", topicForError);
+            }
         }
     }
 }
