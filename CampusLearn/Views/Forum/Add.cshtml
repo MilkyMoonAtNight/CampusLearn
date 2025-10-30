@@ -1,86 +1,67 @@
 ﻿@model CampusLearn.Models.ForumTopic
+
 @{
-    ViewData["Title"] = "Add Forum";
+    ViewData["Title"] = "New Topic";
 }
 
 <style>
-    .add-forum-container {
-        max-width: 600px;
-        margin: auto;
-        padding: 30px;
+    .form-container {
+        max-width: 700px;
+        margin: 50px auto;
+        padding: 20px;
         font-family: 'Segoe UI', sans-serif;
-        background: linear-gradient(to right, #f0f8ff, #e6f7ff);
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
-        .add-forum-container h2 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
 
     .form-group {
         margin-bottom: 15px;
     }
 
-        .form-group label {
-            font-weight: bold;
-        }
+    label {
+        font-weight: 600;
+    }
 
-    .form-control {
+    input[type=text], textarea {
         width: 100%;
-        padding: 10px;
-        border-radius: 5px;
+        border-radius: 8px;
         border: 1px solid #ccc;
+        padding: 10px;
     }
 
-    .btn-submit {
-        background: linear-gradient(to right, #0078D7, #00BFFF);
+    textarea {
+        resize: none;
+        height: 100px;
+    }
+
+    button {
+        background-color: #6a0dad;
         color: white;
-        padding: 10px 20px;
+        padding: 8px 14px;
         border: none;
-        border-radius: 5px;
-        width: 100%;
-        font-size: 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s ease;
     }
 
-        .btn-submit:hover {
-            background: linear-gradient(to right, #005a9e, #009acd);
+        button:hover {
+            background-color: #580b9e;
         }
 </style>
 
-<div class="add-forum-container">
-    <h2>Add New Forum</h2>
-
+<div class="form-container">
+    <h2>Create a New Topic</h2>
     <form asp-action="Add" method="post">
-
-        @Html.AntiForgeryToken()
-        <div asp-validation-summary ="All" method ="post"></div>
-
         <div class="form-group">
-            <label asp-for="Title"></label>
-            <input asp-for="Title" class="form-control" placeholder="Enter topic title..." />
-            <span asp-validation-for="Title" class="text-danger"></span>
+            <label>Title</label>
+            <input asp-for="Title" class="form-control" required />
         </div>
-
         <div class="form-group">
-            <label asp-for="Subject"></label>
-            <input asp-for="Subject" class="form-control" placeholder="Enter subject..." />
-            <span asp-validation-for="Subject" class="text-danger"></span>
+            <label>Subject</label>
+            <input asp-for="Subject" class="form-control" required />
         </div>
-
         <div class="form-group">
-            <label asp-for="Description"></label>
-            <textarea asp-for="Description" class="form-control" rows="4" placeholder="Start the discussion..."></textarea>
-            <span asp-validation-for="Description" class="text-danger"></span>
+            <label>Description</label>
+            <textarea asp-for="Description" class="form-control" required></textarea>
         </div>
-
-        <button type="submit" class="btn-submit">Submit</button>
+        <button type="submit">Create Topic</button>
     </form>
 </div>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}
