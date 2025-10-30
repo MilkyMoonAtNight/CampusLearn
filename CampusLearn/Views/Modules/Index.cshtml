@@ -64,21 +64,42 @@
 
 <div class="modules-container">
     <h2>Available Modules</h2>
-    <div class="modules-grid">
-        @foreach (var module in Model)
-        {
-            <a asp-controller="Modules" asp-action="Details" asp-route-id="@module.ModuleID" style="text-decoration:none; color:inherit;">
-                <div class="module-card">
-                    <img src="@(module.ModuleResources?.FirstOrDefault()?.ResourceURL ?? "/images/default-module.jpg")"
-                         alt="@module.ModuleName" class="module-image" />
-                    <div class="module-content">
-                        <div class="module-title">@module.ModuleName</div>
-                        <div class="module-info"><strong>Instructor:</strong> @(module.ModuleHead != null ? module.ModuleHead.TutorName + " " + module.ModuleHead.TutorSurname : "TBA")</div>
-                        <div class="module-info"><strong>Cluster:</strong> @(module.ModuleCluster?.ClusterName ?? "Unassigned")</div>
-                        <button class="download-btn">Download Offline</button>
-                    </div>
+    @if(!Model.Any())
+    {
+        <p>No Modules Found</p>
+    }
+    else
+    {
+<div class="modules-grid">
+    @foreach(var module in Model)
+            {
+    {
+                    var imgUrl = module.ModuleResources?.FirstOrDefault()?.ResourceURL ?? "/images/default-module.jpg";
+    }
+    <img src="@module.ModuleResources?.FirstOrDefault()?.ResourceURL?? " /images/default-module.jpg" alt="@module.ModuleName" class="module-image" />
+    <a asp-controller="Modules" asp-action="Details"
+       asp-route-id="@module.ModuleID"
+       style="text-decoration:none; color:inherit;">
+        <div class="module-card">
+            
+            <div class="module-content">
+                <div class="module-title">@module.ModuleName</div>
+
+                <div class="module-info">
+                    <strong>Instructor:</strong>
+                    @(module.ModuleHead != null
+                                    ? module.ModuleHead.TutorName + " " + module.ModuleHead.TutorSurname
+                                    : "TBA")
                 </div>
-            </a>
-        }
-    </div>
+                <div class="module-info">
+                    <strong>Cluster:</strong>
+                    @(module.ModuleCluster?.ClusterName ?? "Unassigned")
+                </div>
+                <button class="download-btn" disabled>Download Offline</button>
+            </div>
+        </div>
+    </a>
+    }
+</div>
+    }
 </div>

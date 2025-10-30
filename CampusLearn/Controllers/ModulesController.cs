@@ -22,6 +22,7 @@ namespace CampusLearn.Controllers
                 .Include(m => m.ModuleCluster)
                 .Include(m => m.ModuleHead)
                 .Include(m => m.ModuleResources)
+                .AsNoTracking()
                 .ToListAsync();
 
             return View(modules);
@@ -34,6 +35,13 @@ namespace CampusLearn.Controllers
                 .Include(m => m.ModuleCluster)
                 .Include(m => m.ModuleHead)
                 .Include(m => m.ModuleResources)
+                .Include(m => m.ModulePlan)
+                .Include(m => m.ModuleAssignments)
+                .Include(m => m.ModuleProjects)
+                .Include(m => m.ModuleTests)
+                .Include(m => m.ModuleWeeks)
+                .ThenInclude(w => w.Contents)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(m => m.ModuleID == id);
 
             if (module == null)

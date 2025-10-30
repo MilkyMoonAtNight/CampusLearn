@@ -43,24 +43,134 @@
 
 <div class="module-details">
     <h2>@Model.ModuleName</h2>
+
     <p><strong>Instructor:</strong> @(Model.ModuleHead != null ? Model.ModuleHead.TutorName + " " + Model.ModuleHead.TutorSurname : "TBA")</p>
+
     <p><strong>Cluster:</strong> @(Model.ModuleCluster?.ClusterName ?? "Unassigned")</p>
+
+    @if(Model.ModulePlan != null)
+    {
+    <p>
+        <strong>Weeks:</strong> @Model.ModulePlan.TotalWeeks |
+        <strong>Assignments Required:</strong> @Model.ModulePlan.AssignmentsRequired |
+        <strong>Projects Required:</strong> @Model.ModulePlan.ProjectsRequired |
+        <strong>Tests Allowed:</strong> @Model.ModulePlan.TestsAllowed
+    </p>
+    }
+
 
     <div class="section">
         <h3>📚 Resources</h3>
-        @if (Model.ModuleResources != null && Model.ModuleResources.Any())
+        @if (Model.ModuleResources?.Any() == true)
         {
             foreach (var resource in Model.ModuleResources)
             {
-                <div class="card">
-                    <div class="card-title">@resource.ResourceType</div>
-                    <a href="@resource.ResourceURL" target="_blank">@resource.ResourceURL</a>
-                </div>
+        <div class="card">
+            <div class="card-title">@(resource.ResourceType?? "Resource")</div>
+            <a href="@resource.ResourceURL" target="_blank">@resource.ResourceURL</a>
+        </div>
             }
         }
         else
         {
-            <p>No resources available for this module.</p>
+        <p>No resources available for this module.</p>
         }
     </div>
+    <!--Assignments-->
+    <div class="section">
+        <h3>Assignments (@(Model.ModuleAssignments?.Count ?? 0))</h3>
+        @if (Model.ModuleAssignments?.Any() == true)
+        {
+        <ul>
+            @foreach (var a in Model.ModuleAssignments)
+                {
+            <li>
+                <strong>@a.AssignmentTitle</strong>
+                <em>(Due @a.DateDue.ToShortDateString())</em>
+                @if (!string.IsNullOrWhiteSpace(a.AssignmentPdfURL))
+                        {
+                <a href="@a.AssignmentPdfURL" target="_blank">Download</a>
+                        }
+            </li>
+                }
+        </ul>
+        }
+        else { <p>No assignments.</p> }
+    </div>
+
+    <!--Projects-->
+    <div class="section">
+        <h3>Projects (@(Model.ModuleProjects?.Count ?? 0))</h3>
+        @if (Model.ModuleProjects?.Any() == true)
+        {
+        <ul>
+            @foreach (var p in Model.ModuleProjects)
+                {
+            <li>
+                <strong>@p.ProjectTitle</strong>
+                <em>(Due @p.DateDue.ToShortDateString())</em>
+                @if (!string.IsNullOrWhiteSpace(p.ProjectPdfURL))
+                        {
+                <a href="@p.ProjectPdfURL" target="_blank">Download</a>
+                        }
+            </li>
+                }
+        </ul>
+        }
+        else { <p>No projects.</p> }
+    </div>
+    <!--Tests-->
+    <div class="section">
+        <h3>Tests (@(Model.ModuleTests?.Count ?? 0))</h3>
+        @if (Model.ModuleTests?.Any() == true)
+        {
+        <ul>
+            @foreach (var t in Model.ModuleTests)
+                {
+            <li>
+                <strong>@t.TestTitle</strong>
+                – Week @t.TestWeek – @t.TestDate.ToShortDateString()
+            </li>
+                }
+        </ul>
+        }
+        else { <p>No tests scheduled.</p> }
+    </div>
+    <!--Weekly Content-->
+    <div class="section">
+        <h3>Weekly Plan</h3>
+        @if (Model.ModuleWeeks?.Any() == true)
+        {
+            foreach (var w in Model.ModuleWeeks.OrderBy(x => x.WeekNumber))
+            {
+        <div class="card">
+            <div class="card-title">Week @w.WeekNumber</div>
+            @if (w.Contents?.Any() == true)
+                    {
+            <ul>
+                @foreach (var c in w.Contents)
+                            {
+                                <li>
+                                    <strong> @c.ContentTitle</strong>
+                                    @if(!string.IsNullOrEmpty(c.PdfURL))
+                                    {
+                                    <a href="@c.PdfURL" target="_blank" style="margin-left:10px;">Download PDF</a>
+                
+                                    }
+                                </li>
+                           }
+            </ul>
+                    }
+                    else
+                    {
+            <em>No content listed.</em>
+                    }
+        </div>
+            }
+        }
+        else { <p>No weekly plan defined.</p> }
+    </div>
+
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to Modules</a>
+
 </div>
