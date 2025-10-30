@@ -16,13 +16,19 @@
 
     <!-- Tabs -->
     <nav class="dir__tabs" role="tablist" aria-label="People tabs">
-        <button class="dir__tab is-active" data-target="#tab-students" aria-selected="true">Students (@students.Count)</button>
-        <button class="dir__tab" data-target="#tab-tutors" aria-selected="false">Tutors (@tutors.Count)</button>
-        <button class="dir__tab" data-target="#tab-admins" aria-selected="false">Admins (@admins.Count)</button>
+        <button id="tabbtn-students" class="dir__tab is-active" data-target="#tab-students" role="tab" aria-selected="true" type="button">
+            Students (@students.Count)
+        </button>
+        <button id="tabbtn-tutors" class="dir__tab" data-target="#tab-tutors" role="tab" aria-selected="false" type="button">
+            Tutors (@tutors.Count)
+        </button>
+        <button id="tabbtn-admins" class="dir__tab" data-target="#tab-admins" role="tab" aria-selected="false" type="button">
+            Admins (@admins.Count)
+        </button>
     </nav>
 
     <!-- Students -->
-    <section id="tab-students" class="dir__pane is-active" role="tabpanel" aria-labelledby="Students">
+    <section id="tab-students" class="dir__pane is-active" role="tabpanel" aria-labelledby="tabbtn-students">
         @if (students.Any())
         {
             <div class="dir__tablewrap">
@@ -62,13 +68,12 @@
         }
         else
         {
-
             <div class="dir__empty">No students found.</div>
         }
     </section>
 
     <!-- Tutors -->
-    <section id="tab-tutors" class="dir__pane" role="tabpanel" aria-labelledby="Tutors" hidden>
+    <section id="tab-tutors" class="dir__pane" role="tabpanel" aria-labelledby="tabbtn-tutors" hidden>
         @if (tutors.Any())
         {
             <div class="dir__tablewrap">
@@ -108,13 +113,12 @@
         }
         else
         {
-
             <div class="dir__empty">No tutors found.</div>
         }
     </section>
 
     <!-- Admins -->
-    <section id="tab-admins" class="dir__pane" role="tabpanel" aria-labelledby="Admins" hidden>
+    <section id="tab-admins" class="dir__pane" role="tabpanel" aria-labelledby="tabbtn-admins" hidden>
         @if (admins.Any())
         {
             <div class="dir__tablewrap">
@@ -154,7 +158,6 @@
         }
         else
         {
-
             <div class="dir__empty">No admins found.</div>
         }
     </section>
@@ -162,7 +165,41 @@
 
 @section Scripts {
     <script>
-        // Load / toggle the inline thread under a row
+        // ---------------------------
+        // TAB SWITCHING
+        // ---------------------------
+        document.addEventListener('click', function (e) {
+          const btn = e.target.closest('.dir__tab');
+          if (!btn) return;
+
+          // deactivate all tabs
+          const tabs = btn.parentElement.querySelectorAll('.dir__tab');
+          tabs.forEach(t => {
+            t.classList.remove('is-active');
+            t.setAttribute('aria-selected', 'false');
+          });
+
+          // hide all panes
+          document.querySelectorAll('.dir__pane').forEach(p => {
+            p.classList.remove('is-active');
+            p.hidden = true;
+          });
+
+          // activate clicked tab
+          btn.classList.add('is-active');
+          btn.setAttribute('aria-selected', 'true');
+
+          // show target pane
+          const target = document.querySelector(btn.dataset.target);
+          if (target) {
+            target.hidden = false;
+            target.classList.add('is-active');
+          }
+        });
+
+        // ---------------------------
+        // INLINE CHAT HELPERS
+        // ---------------------------
         async function toggleThread(userId) {
           const row  = document.getElementById(`thread-row-${userId}`);
           const slot = document.getElementById(`thread-slot-${userId}`);
@@ -202,6 +239,7 @@
           if (slot) slot.innerHTML = '';
         }
 
+        // Handle inline composer submit (PJAX style refresh of the thread partial)
         document.addEventListener('submit', async function (e) {
           const form = e.target.closest('form.inline-chat__composer');
           if (!form) return;   // not our chat form
@@ -227,7 +265,6 @@
           }
         });
     </script>
-
 }
 
 <style>

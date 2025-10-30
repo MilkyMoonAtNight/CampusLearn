@@ -12,9 +12,17 @@ namespace CampusLearn.Controllers
         public DashboardController(CampusLearnContext db) => _db = db;
 
         [HttpGet]
-        public IActionResult Index(long studentId = 1001)
+        public IActionResult Index()
         {
-            ViewData["StudentId"] = studentId;
+            var studentId = HttpContext.Session.GetInt32("LoggedInUserID");
+
+            if (studentId == null)
+            {
+                // if session expired or user not logged in
+                return RedirectToAction("Index", "LogIn");
+            }
+
+            ViewData["StudentId"] = studentId.Value;
             return View();
         }
     }
@@ -27,10 +35,14 @@ namespace CampusLearn.Controllers
         public DashboardApiController(CampusLearnContext db) => _db = db;
 
         // --- Cards ---
-        // GET /api/dashboard/stats?studentId=1001
+        // GET /api/dashboard/stats
         [HttpGet("/api/dashboard/stats")]
-        public async Task<ActionResult<DashboardStatsDto>> GetStats([FromQuery] long studentId, CancellationToken ct)
+        public async Task<ActionResult<DashboardStatsDto>> GetStats(CancellationToken ct)
         {
+            var studentId = HttpContext.Session.GetInt32("LoggedInUserID");
+            if (studentId == null)
+                return Unauthorized();
+
             var totalModules = await _db.Database.SqlQuery<int>($@"
                 SELECT COUNT(DISTINCT dm.moduleid)
                 FROM enrollment e
@@ -78,8 +90,7 @@ namespace CampusLearn.Controllers
             };
         }
 
-        // --- Announcements (infinite scroll) ---
-        // GET /api/dashboard/announcements?skip=0&take=5
+        // --- Announcements ---
         [HttpGet("/api/dashboard/announcements")]
         public async Task<ActionResult<IEnumerable<AnnouncementItemDto>>> GetAnnouncements(
             [FromQuery] int skip = 0, [FromQuery] int take = 5, CancellationToken ct = default)
@@ -95,11 +106,14 @@ namespace CampusLearn.Controllers
             return items;
         }
 
-        // --- Chart: Assignments due per module ---
-        // GET /api/dashboard/chart-assignments?studentId=1001
+        // --- Chart: Assignments per module ---
         [HttpGet("/api/dashboard/chart-assignments")]
-        public async Task<ActionResult<object>> GetAssignmentsChart([FromQuery] long studentId, CancellationToken ct = default)
+        public async Task<ActionResult<object>> GetAssignmentsChart(CancellationToken ct = default)
         {
+            var studentId = HttpContext.Session.GetInt32("LoggedInUserID");
+            if (studentId == null)
+                return Unauthorized();
+
             var rows = await _db.Database.SqlQuery<ModuleItemCountDto>($@"
                 SELECT tm.modulename AS ""ModuleName"",
                        COUNT(ma.assignmentid) AS ""Items""
@@ -124,20 +138,22 @@ namespace CampusLearn.Controllers
             };
         }
 
-        // --- Calendar (assignments + tests for a month) ---
-        // GET /api/dashboard/calendar?studentId=1001&year=2025&month=10
+        // --- Calendar ---
         [HttpGet("/api/dashboard/calendar")]
         public async Task<ActionResult<IEnumerable<CalendarEventDto>>> GetCalendar(
-            [FromQuery] long studentId, [FromQuery] int year, [FromQuery] int month, CancellationToken ct = default)
+            [FromQuery] int year, [FromQuery] int month, CancellationToken ct = default)
         {
+            var studentId = HttpContext.Session.GetInt32("LoggedInUserID");
+            if (studentId == null)
+                return Unauthorized();
+
             var start = new DateTime(year, month, 1);
             var end = start.AddMonths(1);
 
-            // Assignments
             var assignments = await _db.Database.SqlQuery<CalendarEventDto>($@"
                 SELECT ma.datedue         AS ""EventDate"",
                        ma.assignmenttitle AS ""Title"",
-                   tm.modulename          AS ""ModuleName"",
+                       tm.modulename      AS ""ModuleName"",
                        'Assignment'       AS ""Type""
                 FROM moduleassignments ma
                 JOIN topicmodule tm ON tm.moduleid = ma.moduleid
@@ -151,7 +167,6 @@ namespace CampusLearn.Controllers
                   );
             ").ToListAsync(ct);
 
-            // Tests
             var tests = await _db.Database.SqlQuery<CalendarEventDto>($@"
                 SELECT t.testdate     AS ""EventDate"",
                        t.testtitle    AS ""Title"",
@@ -169,14 +184,12 @@ namespace CampusLearn.Controllers
                   );
             ").ToListAsync(ct);
 
-
             return assignments.Concat(tests)
                               .OrderBy(e => e.EventDate)
                               .ToList();
         }
 
-        // GET /api/dashboard/students
-        // Returns students that have at least one enrollment (nice for real data)
+        // --- Students (for testing/demo data) ---
         [HttpGet("/api/dashboard/students")]
         public async Task<ActionResult<IEnumerable<StudentOptionDto>>> GetStudents(CancellationToken ct = default)
         {
@@ -192,4 +205,3 @@ namespace CampusLearn.Controllers
         }
     }
 }
-
