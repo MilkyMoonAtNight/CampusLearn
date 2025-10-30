@@ -69,7 +69,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Custom services
-builder.Services.AddSingleton<IAnnouncementsStore, AnnouncementsStore>();
+builder.Services.AddScoped<IAnnouncementsStore, AnnouncementsStore>();
 
 var app = builder.Build();
 

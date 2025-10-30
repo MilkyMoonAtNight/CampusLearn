@@ -9,12 +9,13 @@ namespace CampusLearn.Services
         void Add(string title, string moduleTag, string body);
     }
 
+    // View-model used by the sidebar
     public class Announcement
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
-        public string Title { get; set; } = "";
-        public string ModuleTag { get; set; } = "";
-        public string Body { get; set; } = "";
-        public DateTime CreatedAt { get; set; }
+        public int Id { get; set; }              // maps to Announcements.AnnouncementID
+        public string Title { get; set; } = "";  // maps to Topic
+        public string ModuleTag { get; set; } = ""; // optional badge (derived from Title)
+        public string Body { get; set; } = "";   // maps to Discussion
+        public DateTime CreatedAt { get; set; }  // maps to CreatedAt
     }
 }
