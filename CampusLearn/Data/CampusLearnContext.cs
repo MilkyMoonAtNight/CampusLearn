@@ -436,9 +436,10 @@ namespace CampusLearn.Data
                 e.Property(x => x.AssignmentsRequired).HasColumnName("assignmentsrequired");
                 e.Property(x => x.ProjectsRequired).HasColumnName("projectsrequired");
 
-                e.HasOne<TopicModule>()
-                 .WithOne()
-                 .HasForeignKey<ModulePlan>(x => x.ModuleID);
+                e.HasOne<TopicModule>(p => p.Module)
+                 .WithOne(m => m.ModulePlan)
+                 .HasForeignKey<ModulePlan>(p=> p.ModuleID)
+                 .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<ModuleWeek>(e =>
