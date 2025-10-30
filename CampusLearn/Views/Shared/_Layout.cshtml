@@ -398,8 +398,8 @@
         && (ViewContext.RouteData.Values["action"]?.ToString() == "Index"
         || ViewContext.RouteData.Values["action"]?.ToString() == "Register")))
     {
-        @await Html.PartialAsync("_ChatPopup")
-      
+        @await Html.PartialAsync("_ChatPopup");
+        
     }
 
 
