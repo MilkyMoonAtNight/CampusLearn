@@ -1,6 +1,5 @@
 ﻿@{
     ViewData["Title"] = "Dashboard";
-    var initialStudentId = (long)(ViewData["StudentId"] ?? 1001L);
 }
 
 <div class="container py-4">
@@ -9,10 +8,7 @@
             <h2 class="mb-0">Dashboard</h2>
             <small class="text-muted">Interactive overview connected to the database</small>
         </div>
-        <div class="d-flex gap-2 align-items-center">
-            <label class="me-2 small text-muted">Student:</label>
-            <select id="studentId" class="form-select form-select-sm" style="min-width:220px"></select>
-        </div>
+        <!-- If you later want a student switcher, re-add it here -->
     </div>
 
     <!-- Cards -->
@@ -103,165 +99,259 @@
 
 @section Scripts {
     <script>
-        let skip = 0;
-        const sidEl = document.getElementById('studentId');
-
-        const elTotal = document.getElementById('card-total');
+        // ---------------------------
+        // Cards
+        // ---------------------------
+        const elTotal    = document.getElementById('card-total');
         const elEnrolled = document.getElementById('card-enrolled');
-        const elAssign = document.getElementById('card-assign');
-        const elTests = document.getElementById('card-tests');
+        const elAssign   = document.getElementById('card-assign');
+        const elTests    = document.getElementById('card-tests');
+
+        async function loadStats(){
+          const r = await fetch(`/api/dashboard/stats`);
+          if(!r.ok) return;
+          const d = await r.json();
+          elTotal.textContent    = d.totalModules;
+          elEnrolled.textContent = d.activeEnrollments;
+          elAssign.textContent   = d.pendingAssignments;
+          elTests.textContent    = d.upcomingTests;
+        }
+
+        // ---------------------------
+        // Announcements (infinite-ish)
+        // ---------------------------
+        let skip = 0;
         const annList = document.getElementById('ann-list');
         const annMore = document.getElementById('ann-more');
 
-        // ---- helpers ----
-        function getQueryId(){
-            const u = new URL(window.location.href);
-            const id = u.searchParams.get('studentId');
-            return id ? Number(id) : null;
-        }
-
-        async function loadStudents(){
-            const r = await fetch('/api/dashboard/students');
-            if(!r.ok) return;
-            const students = await r.json();
-
-            // Fill dropdown
-            sidEl.innerHTML = '';
-            for(const s of students){
-                const opt = document.createElement('option');
-                opt.value = s.studentId;
-                opt.textContent = `${s.displayName} (#${s.studentId})`;
-                sidEl.appendChild(opt);
-            }
-
-            // Choose default
-            const qsId = getQueryId();
-            if(qsId && students.some(s => s.studentId === qsId)){
-                sidEl.value = qsId;
-            } else if (students.length){
-                sidEl.value = students[0].studentId;
-            }
-
-            // Kick off first load
-            reloadAll();
-        }
-
-        // ---- Cards ----
-        async function loadStats(){
-            const sid = sidEl.value;
-            const r = await fetch(`/api/dashboard/stats?studentId=${sid}`);
-            if(!r.ok) return;
-            const d = await r.json();
-            elTotal.textContent = d.totalModules;
-            elEnrolled.textContent = d.activeEnrollments;
-            elAssign.textContent = d.pendingAssignments;
-            elTests.textContent = d.upcomingTests;
-        }
-
-        // ---- Announcements ----
         async function loadMoreAnnouncements(){
-            const r = await fetch(`/api/dashboard/announcements?skip=${skip}&take=5`);
-            if(!r.ok) return;
-            const items = await r.json();
-            for(const a of items){
-                const li = document.createElement('li');
-                li.className = 'list-group-item';
-                li.innerHTML = `<div class="fw-semibold">${a.topic} <span class="badge text-bg-secondary ms-1">${a.progress}</span></div>
-                                <div class="small text-muted">${new Date(a.createdAt).toLocaleString()}</div>
-                                <div>${a.discussion}</div>`;
-                annList.appendChild(li);
-            }
-            skip += items.length;
-            if(items.length < 5){ annMore.disabled = true; annMore.textContent = 'No more'; }
+          const r = await fetch(`/api/dashboard/announcements?skip=${skip}&take=5`);
+          if(!r.ok) return;
+          const items = await r.json();
+          for (const a of items){
+            const li = document.createElement('li');
+            li.className = 'list-group-item';
+            li.innerHTML = `
+              <div class="fw-semibold">
+                ${a.topic}
+                <span class="badge text-bg-secondary ms-1">${a.progress}</span>
+              </div>
+              <div class="small text-muted">${new Date(a.createdAt).toLocaleString()}</div>
+              <div>${a.discussion ?? ''}</div>`;
+            annList.appendChild(li);
+          }
+          skip += items.length;
+          if (items.length < 5){ annMore.disabled = true; annMore.textContent = 'No more'; }
         }
 
-        // ---- Calendar ----
+        annMore.addEventListener('click', loadMoreAnnouncements);
+
+        // ---------------------------
+        // Calendar
+        // ---------------------------
         let calYear, calMonth;
         const elCalTitle = document.getElementById('cal-title');
-        const elCalBody = document.getElementById('cal-body');
-        const elPrev = document.getElementById('cal-prev');
-        const elNext = document.getElementById('cal-next');
+        const elCalBody  = document.getElementById('cal-body');
 
         function setMonth(y, m){
-            calYear = y; calMonth = m;
-            const dt = new Date(y, m-1, 1);
-            elCalTitle.textContent = dt.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+          calYear = y; calMonth = m;
+          const dt = new Date(y, m - 1, 1);
+          elCalTitle.textContent = dt.toLocaleString(undefined, { month: 'long', year: 'numeric' });
         }
 
         function buildGrid(events){
-            elCalBody.innerHTML = '';
-            const firstDay = new Date(calYear, calMonth-1, 1);
-            const startDow = firstDay.getDay();
-            const daysInMonth = new Date(calYear, calMonth, 0).getDate();
+          elCalBody.innerHTML = '';
+          const firstDay    = new Date(calYear, calMonth - 1, 1);
+          const startDow    = firstDay.getDay();
+          const daysInMonth = new Date(calYear, calMonth, 0).getDate();
 
-            let day = 1;
-            for(let row=0; row<6; row++){
-                const tr = document.createElement('tr');
-                for(let col=0; col<7; col++){
-                    const td = document.createElement('td');
-                    td.style.verticalAlign = 'top';
-                    td.style.height = '110px';
-                    td.className = 'align-top';
+          let day = 1;
+          for (let row = 0; row < 6; row++){
+            const tr = document.createElement('tr');
+            for (let col = 0; col < 7; col++){
+              const td = document.createElement('td');
+              td.style.verticalAlign = 'top';
+              td.style.height = '110px';
+              td.className = 'align-top';
 
-                    const idx = row*7 + col;
-                    if(idx >= startDow && day <= daysInMonth){
-                        const header = document.createElement('div');
-                        header.className = 'small text-muted mb-1';
-                        header.textContent = day.toString();
-                        td.appendChild(header);
+              const idx = row * 7 + col;
+              if (idx >= startDow && day <= daysInMonth){
+                const header = document.createElement('div');
+                header.className = 'small text-muted mb-1';
+                header.textContent = String(day);
+                td.appendChild(header);
 
-                        const key = new Date(calYear, calMonth-1, day).toISOString().slice(0,10);
-                        (events[key] || []).forEach(ev => {
-                            const badge = document.createElement('div');
-                            const isTest = ev.type === 'Test';
-                            badge.className = `badge ${isTest ? 'bg-warning text-dark' : 'bg-primary'} text-wrap me-1 mb-1`;
-                            badge.style.whiteSpace = 'normal';
-                            badge.innerText = `${ev.moduleName}: ${ev.title}`;
-                            td.appendChild(badge);
-                        });
-                        day++;
-                    }
-                    tr.appendChild(td);
-                }
-                elCalBody.appendChild(tr);
-                if(day > daysInMonth) break;
+                const key = `${calYear}-${String(calMonth).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                (events[key] || []).forEach(ev => {
+                  const isTest = ev.type === 'Test';
+                  const badge = document.createElement('div');
+                  badge.className = `badge ${isTest ? 'bg-warning text-dark' : 'bg-primary'} text-wrap me-1 mb-1`;
+                  badge.style.whiteSpace = 'normal';
+                  badge.innerText = `${ev.moduleName}: ${ev.title}`;
+                  td.appendChild(badge);
+                });
+
+                day++;
+              }
+              tr.appendChild(td);
             }
+            elCalBody.appendChild(tr);
+            if (day > daysInMonth) break;
+          }
         }
 
         async function loadCalendar(){
-            const sid = sidEl.value;
-            const r = await fetch(`/api/dashboard/calendar?studentId=${sid}&year=${calYear}&month=${calMonth}`);
-            if(!r.ok) return;
-            const items = await r.json();
-            const map = {};
-            for(const ev of items){
-                const key = new Date(ev.eventDate).toISOString().slice(0,10);
-                (map[key] ||= []).push(ev);
-            }
-            buildGrid(map);
+          const r = await fetch(`/api/dashboard/calendar?year=${calYear}&month=${calMonth}`);
+          if(!r.ok) return;
+          const items = await r.json();
+
+          // Timezone-safe: API returns ISO strings; slice date part directly
+          const map = {};
+          for (const ev of items){
+            const key = (typeof ev.eventDate === 'string')
+              ? ev.eventDate.slice(0,10)
+              : new Date(ev.eventDate).toISOString().slice(0,10);
+            (map[key] ||= []).push(ev);
+          }
+          buildGrid(map);
         }
 
-        function prevMonth(){ const d = new Date(calYear, calMonth-2, 1); setMonth(d.getFullYear(), d.getMonth()+1); loadCalendar(); }
-        function nextMonth(){ const d = new Date(calYear, calMonth, 1);   setMonth(d.getFullYear(), d.getMonth()+1); loadCalendar(); }
-
-        function reloadAll(){
-            skip = 0; annList.innerHTML = ''; annMore.disabled = false; annMore.textContent = 'Load more';
-            loadStats(); loadMoreAnnouncements(); loadCalendar();
+        function prevMonth(){
+          const d = new Date(calYear, calMonth - 2, 1);
+          setMonth(d.getFullYear(), d.getMonth() + 1);
+          loadCalendar();
+        }
+        function nextMonth(){
+          const d = new Date(calYear, calMonth, 1);
+          setMonth(d.getFullYear(), d.getMonth() + 1);
+          loadCalendar();
         }
 
-        sidEl.addEventListener('change', reloadAll);
-        annMore.addEventListener('click', loadMoreAnnouncements);
         document.getElementById('cal-prev').addEventListener('click', prevMonth);
         document.getElementById('cal-next').addEventListener('click', nextMonth);
 
-        // boot
-        const now = new Date();
-        setMonth(now.getFullYear(), now.getMonth()+1);
-        loadStudents();                 // << fetch list from DB, then reloadAll()
-        setInterval(loadStats, 15000);
+        // ---------------------------
+        // Boot
+        // ---------------------------
+        (function init(){
+          const now = new Date();
+          setMonth(now.getFullYear(), now.getMonth() + 1);
+          loadStats();
+          loadMoreAnnouncements();
+          loadCalendar();
+          // optional: refresh cards periodically
+          setInterval(loadStats, 15000);
+        })();
     </script>
 }
+<style>
+    /* --- Dashboard polish --- */
+    .container.py-4 {
+        max-width: 1200px;
+    }
 
+    /* Cards */
+    .card.shadow-sm {
+        border: 1px solid #eef2f7;
+        border-radius: 12px;
+    }
 
+    .card-body .display-6 {
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: -0.02em;
+    }
 
+    .card .text-muted {
+        color: #6b7280 !important;
+    }
+
+    /* Announcements */
+    #ann-list .list-group-item {
+        border-left: 0;
+        border-right: 0;
+        padding: 0.85rem 0.75rem;
+    }
+
+        #ann-list .list-group-item + .list-group-item {
+            border-top-color: #edf0f3;
+        }
+
+    #ann-more {
+        border-radius: 10px;
+    }
+
+    /* Calendar container */
+    #cal-grid {
+        table-layout: fixed;
+    }
+
+        #cal-grid thead th {
+            text-align: center;
+            font-weight: 700;
+            color: #334155;
+            background: #f8fafc !important;
+            border-color: #e5e7eb !important;
+        }
+
+        #cal-grid tbody td {
+            vertical-align: top !important;
+            border-color: #e5e7eb !important;
+            padding: 6px 8px;
+            background: #fff;
+        }
+
+            /* Day header inside cell */
+            #cal-grid tbody td > .small.text-muted {
+                color: #6b7280 !important;
+                font-weight: 600;
+            }
+
+        /* Event badges inside calendar cells */
+        #cal-grid .badge {
+            display: inline-block;
+            max-width: 100%;
+            overflow-wrap: anywhere;
+            white-space: normal !important;
+            padding: 0.35rem 0.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        /* Subtle hover so cells feel interactive */
+        #cal-grid tbody td:hover {
+            background: #f9fbff;
+        }
+
+    /* Calendar title + controls */
+    #cal-title {
+        min-width: 180px;
+        justify-content: center;
+    }
+
+    #cal-prev, #cal-next {
+        border-radius: 8px;
+    }
+    /*
+        body.dark .card,
+        body.dark #cal-grid tbody td {
+            background: #0f172a;
+            border-color: #1f2937;
+        }
+
+        body.dark .table-light th {
+            background: #111827 !important;
+            color: #e5e7eb;
+        }
+
+        body.dark .text-muted {
+            color: #9ca3af !important;
+        }
+
+        body.dark #cal-grid tbody td:hover {
+            background: #111827;
+        }
+    */
+    /* Optional: very light dark-mode support if you toggle a .dark class on */
+
+</style>
 
