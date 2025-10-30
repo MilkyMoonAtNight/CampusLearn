@@ -36,9 +36,6 @@ namespace CampusLearn.Models
         [Column("pdfsizebytes")]
         public long? PdfSizeBytes { get; set; }
 
-        [Column("createdat")]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
         // Navigation
         public ModuleWeek? ModuleWeek { get; set; }
     }

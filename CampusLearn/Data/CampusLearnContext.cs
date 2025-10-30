@@ -450,8 +450,8 @@ namespace CampusLearn.Data
                 e.Property(x => x.ModuleID).HasColumnName("moduleid");
                 e.Property(x => x.WeekNumber).HasColumnName("weeknumber");
 
-                e.HasOne<TopicModule>()
-                 .WithMany()
+                e.HasOne(x => x.Module)
+                 .WithMany(x => x.ModuleWeeks)
                  .HasForeignKey(x => x.ModuleID);
 
                 e.HasIndex(x => new { x.ModuleID, x.WeekNumber }).IsUnique();
@@ -469,8 +469,8 @@ namespace CampusLearn.Data
                 e.Property(x => x.PdfMime).HasColumnName("pdfmime");
                 e.Property(x => x.PdfSizeBytes).HasColumnName("pdfsizebytes");
 
-                e.HasOne<ModuleWeek>()
-                 .WithMany()
+                e.HasOne(x => x.ModuleWeek)
+                 .WithMany(x => x.Contents)
                  .HasForeignKey(x => x.WeekID);
             });
 
@@ -491,8 +491,8 @@ namespace CampusLearn.Data
                 e.Property(x => x.AssignmentUploadPdfMime).HasColumnName("assignmentuploadpdfmime");
                 e.Property(x => x.AssignmentUploadPdfSizeBytes).HasColumnName("assignmentuploadpdfsizebytes");
 
-                e.HasOne<TopicModule>()
-                 .WithMany()
+                e.HasOne(x => x.Module)
+                 .WithMany(x => x.ModuleAssignments)
                  .HasForeignKey(x => x.ModuleID);
             });
 
@@ -513,8 +513,8 @@ namespace CampusLearn.Data
                 e.Property(x => x.UploadPdfMime).HasColumnName("uploadpdfmime");
                 e.Property(x => x.UploadPdfSizeBytes).HasColumnName("uploadpdfsizebytes");
 
-                e.HasOne<TopicModule>()
-                 .WithMany()
+                e.HasOne(x => x.Module)
+                 .WithMany(x => x.ModuleProjects)
                  .HasForeignKey(x => x.ModuleID);
             });
 
@@ -528,8 +528,8 @@ namespace CampusLearn.Data
                 e.Property(x => x.TestWeek).HasColumnName("testweek");
                 e.Property(x => x.TestDate).HasColumnName("testdate");
 
-                e.HasOne<TopicModule>()
-                 .WithMany()
+                e.HasOne(x => x.Module)
+                 .WithMany(x => x.ModuleTests)
                  .HasForeignKey(x => x.ModuleID);
 
                 e.HasIndex(x => new { x.ModuleID, x.TestWeek }).IsUnique();

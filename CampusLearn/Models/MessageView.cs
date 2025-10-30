@@ -2,7 +2,7 @@
 
 namespace CampusLearn.Models
 {
-    public class MessageUser
+    public class MessageUserView
     {
         public long Id { get; set; } // rename from ID → Id
 

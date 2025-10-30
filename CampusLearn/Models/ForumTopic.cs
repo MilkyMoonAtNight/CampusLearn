@@ -38,11 +38,11 @@ public class Reply
 
         public string Message { get; set; } = string.Empty;
 
-        // ✅ Explicitly mark as UTC timestamp for PostgreSQL compatibility
+      
         [Column(TypeName = "timestamp with time zone")]
         public DateTime PostedAt { get; set; } = DateTime.UtcNow;
 
-        // Navigation property
+   
         public ForumTopic? ForumTopic { get; set; }
     }
 
