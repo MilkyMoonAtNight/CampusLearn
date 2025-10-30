@@ -23,6 +23,6 @@ namespace CampusLearn.Models
         public DateTime PostedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation
-        public Announcement Announcement { get; set; }
+        public Announcement? Announcement { get; set; }
     }
 }

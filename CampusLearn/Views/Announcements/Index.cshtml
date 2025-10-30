@@ -1,75 +1,24 @@
-﻿@model List<CampusLearn.Services.Announcement>
-@{
-    ViewData["Title"] = "Announcements";
-    var sort = (string?)ViewBag.Sort ?? "newest";
+﻿@model IEnumerable<CampusLearn.Models.Announcement>
+
+<h2 class="mb-3">Announcements</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No announcements available.</div>
 }
-<div class="container mt-4">
-    <div class="d-flex align-items-center justify-content-between mb-3">
-        <h2 class="mb-0">Announcements</h2>
-        <form method="get" class="d-flex align-items-center gap-2">
-            <label class="form-label mb-0 me-2">Sort by:</label>
-            <select name="sort" class="form-select form-select-sm" style="width:auto" onchange="this.form.submit()">
-                <option value="newest" selected="@(sort == "newest")">Newest First</option>
-                <option value="oldest" selected="@(sort == "oldest")">Oldest First</option>
-            </select>
-        </form>
+else
+{
+    <div class="list-group">
+        @foreach (var a in Model)
+        {
+            <a asp-action="Details" asp-route-id="@a.AnnouncementID" class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">@a.Topic</h5>
+                    <small>@a.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</small>
+                </div>
+                <p class="mb-1">@a.Discussion</p>
+                <small class="text-muted">@a.Progress</small>
+            </a>
+        }
     </div>
-
-    @if (TempData["Message"] != null)
-    {
-        <div class="alert alert-success">@TempData["Message"]</div>
-    }
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger">@TempData["Error"]</div>
-    }
-
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">Post Announcement</h5>
-            <form asp-action="Create" method="post">
-                <div class="row g-3">
-                    <div class="col-12 col-md-4">
-                        <label class="form-label">Title</label>
-                        <input class="form-control" name="title" required />
-                    </div>
-                    <div class="col-12 col-md-3">
-                        <label class="form-label">Module</label>
-                        <input class="form-control" name="moduleTag" placeholder="e.g., SEN381" />
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Body</label>
-                        <textarea class="form-control" name="body" rows="3" required></textarea>
-                    </div>
-                </div>
-                <div class="mt-3">
-                    <button class="btn btn-primary">Publish</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    @if (!Model.Any())
-    {
-        <div class="text-muted">No announcements.</div>
-    }
-    else
-    {
-        <div class="list-group">
-            @foreach (var a in Model)
-            {
-                <div class="list-group-item">
-                    <div class="d-flex w-100 justify-content-between">
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-primary">@a.ModuleTag</span>
-                            <strong>@a.Title</strong>
-                        </div>
-                        <small class="text-muted">@a.CreatedAt.ToString("g")</small>
-                    </div>
-                    <div class="mt-1">@a.Body</div>
-                </div>
-            }
-        </div>
-    }
-</div>
-
+}

@@ -55,6 +55,7 @@ namespace CampusLearn.Data
         // (You had MessageUser; keep if you actually use it)
         public DbSet<MessageUser> MessageUsers { get; set; }
 
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -244,30 +245,56 @@ namespace CampusLearn.Data
             {
                 e.ToTable("announcements");
                 e.HasKey(x => x.AnnouncementID);
+
                 e.Property(x => x.AnnouncementID).HasColumnName("announcementid");
-                e.Property(x => x.Topic).HasColumnName("topic");
-                e.Property(x => x.Discussion).HasColumnName("discussion");
-                e.Property(x => x.Progress).HasColumnName("progress"); // CHECK in DB
-                e.Property(x => x.CreatedAt).HasColumnName("createdat");
+                e.Property(x => x.Topic)
+                    .HasColumnName("topic")
+                    .IsRequired()
+                    .HasMaxLength(255);
+
+                e.Property(x => x.Discussion)
+                    .HasColumnName("discussion")
+                    .IsRequired();
+
+                e.Property(x => x.Progress)
+                    .HasColumnName("progress")
+                    .HasMaxLength(20);
+
+                e.Property(x => x.CreatedAt)
+                    .HasColumnName("createdat")
+                    .HasDefaultValueSql("now()");
+
                 e.Property(x => x.AdminID).HasColumnName("adminid");
 
-                e.HasOne(x => x.Admin)
-                 .WithMany()
-                 .HasForeignKey(x => x.AdminID);
+                // Only keep this if your entity has `public ICollection<ReplyAnnouncement> Replies { get; set; }`
+                e.HasMany(a => a.Replies)
+                 .WithOne(r => r.Announcement)
+                 .HasForeignKey(r => r.AnnouncementID)
+                 .OnDelete(DeleteBehavior.NoAction); // matches existing FK (no cascade)
             });
 
+            // ReplyAnnouncements
             modelBuilder.Entity<ReplyAnnouncement>(e =>
             {
                 e.ToTable("replyannouncements");
                 e.HasKey(x => x.ReplyID);
+
                 e.Property(x => x.ReplyID).HasColumnName("replyid");
                 e.Property(x => x.AnnouncementID).HasColumnName("announcementid");
-                e.Property(x => x.ReplyText).HasColumnName("replytext");
-                e.Property(x => x.PostedAt).HasColumnName("postedat");
 
+                e.Property(x => x.ReplyText)
+                    .HasColumnName("replytext")
+                    .IsRequired();
+
+                e.Property(x => x.PostedAt)
+                    .HasColumnName("postedat")
+                    .HasDefaultValueSql("now()");
+
+                // Only keep this if your entity has `public Announcement? Announcement { get; set; }`
                 e.HasOne(x => x.Announcement)
                  .WithMany(x => x.Replies)
-                 .HasForeignKey(x => x.AnnouncementID);
+                 .HasForeignKey(x => x.AnnouncementID)
+                 .OnDelete(DeleteBehavior.NoAction); // match DB
             });
 
             // =========================
@@ -567,6 +594,7 @@ namespace CampusLearn.Data
             modelBuilder.Entity<CampusLearn.ViewModels.CalendarEventDto>().HasNoKey();
             modelBuilder.Entity<CampusLearn.ViewModels.StudentOptionDto>().HasNoKey();
 
-        }
+
     }
+}
 }

@@ -1,34 +1,44 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using CampusLearn.Data;
+using CampusLearn.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 using System.Linq;
-using CampusLearn.Services;
 
 namespace CampusLearn.Controllers
 {
     public class AnnouncementsController : Controller
     {
-        private readonly IAnnouncementsStore _store;
-        public AnnouncementsController(IAnnouncementsStore store) => _store = store;
+        private readonly CampusLearnContext _db;
+        public AnnouncementsController(CampusLearnContext db) => _db = db;
 
-        public IActionResult Index(string sort = "newest")
+        public async Task<IActionResult> Index()
         {
-            var items = _store.GetAll();
-            if (sort == "oldest") items = items.OrderBy(a => a.CreatedAt).ToList();
-            ViewBag.Sort = sort;
-            return View(items.ToList());
+            var announcements = await _db.Announcements
+                .Include(a => a.Admin)
+                .OrderByDescending(a => a.CreatedAt)
+                .ToListAsync();
+
+            return View(announcements);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Create(string title, string moduleTag, string body)
+        public async Task<IActionResult> Details(int id)
         {
-            if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(body))
-            {
-                TempData["Error"] = "Title and Body are required.";
-                return RedirectToAction("Index");
-            }
-            _store.Add(title, moduleTag, body);
-            TempData["Message"] = "Announcement posted.";
-            return RedirectToAction("Index");
+            var announcement = await _db.Announcements
+                .Include(a => a.Admin)
+                .FirstOrDefaultAsync(a => a.AnnouncementID == id);
+
+            if (announcement == null)
+                return NotFound();
+
+            var replies = await _db.ReplyAnnouncements
+                .Where(r => r.AnnouncementID == id)
+                .OrderBy(r => r.PostedAt)
+                .ToListAsync();
+
+            ViewBag.Replies = replies;
+            return View(announcement);
         }
     }
 }
