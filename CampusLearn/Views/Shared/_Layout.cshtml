@@ -387,13 +387,15 @@
         </div>
     </div>
     <!-- Chat Popup Component -->
-    @{
-        var hideChat = ViewData["HideChat"] as bool? ?? false;
-    }
-    @if(!hideChat)
+    @if (!(ViewContext.RouteData.Values["controller"]?.ToString() == "LogIn"
+        && (ViewContext.RouteData.Values["action"]?.ToString() == "Index"
+        || ViewContext.RouteData.Values["action"]?.ToString() == "Register")))
     {
         @await Html.PartialAsync("_ChatPopup")
+      
     }
+
+
 
 
     <footer class="border-top footer text-muted">
