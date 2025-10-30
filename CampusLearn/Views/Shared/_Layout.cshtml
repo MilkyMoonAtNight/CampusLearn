@@ -145,6 +145,12 @@
             z-index: 2200;
         }
 
+        .cllogo{
+                        width: 40px;
+            height: 40px;
+            border-radius: 8px;
+        }
+
         /*
           Desktop behaviour: convert collapse to a flex item between brand and toggler so links are visible.
           This prevents mobile-only off-canvas rules from affecting desktop.
@@ -312,6 +318,7 @@
         <header>
             <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light site-navbar mb-3">
                 <div class="container-fluid">
+                    <img src="~/images/campuslearn-removebg-preview.png" class="cllogo" alt="Alternate Text" />
                     <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">CampusLearn</a>
 
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
@@ -411,6 +418,6 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

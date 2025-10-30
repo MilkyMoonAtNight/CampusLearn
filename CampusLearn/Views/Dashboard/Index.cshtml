@@ -12,6 +12,8 @@
     </div>
 
     <!-- Cards -->
+    <h3 class="fw-bold">Welcome back, @ViewData["StudentName"]!</h3>
+
     <div class="row g-3 mb-4">
         <div class="col-6 col-lg-3">
             <div class="card shadow-sm h-100">
@@ -159,23 +161,36 @@
           elCalTitle.textContent = dt.toLocaleString(undefined, { month: 'long', year: 'numeric' });
         }
 
+        // Enhanced grid: fills leading/trailing cells and always shows numbers
         function buildGrid(events){
           elCalBody.innerHTML = '';
-          const firstDay    = new Date(calYear, calMonth - 1, 1);
-          const startDow    = firstDay.getDay();
-          const daysInMonth = new Date(calYear, calMonth, 0).getDate();
+
+          const firstOfMonth   = new Date(calYear, calMonth - 1, 1);
+          const startDow       = firstOfMonth.getDay();                 // 0..6 (Sun..Sat)
+          const daysInMonth    = new Date(calYear, calMonth, 0).getDate();
+          const prevMonthDays  = new Date(calYear, calMonth - 1, 0).getDate();
 
           let day = 1;
-          for (let row = 0; row < 6; row++){
-            const tr = document.createElement('tr');
-            for (let col = 0; col < 7; col++){
-              const td = document.createElement('td');
-              td.style.verticalAlign = 'top';
-              td.style.height = '110px';
-              td.className = 'align-top';
+          let nextMonthDay = 1;
 
-              const idx = row * 7 + col;
-              if (idx >= startDow && day <= daysInMonth){
+          for (let row = 0; row < 6; row++) {
+            const tr = document.createElement('tr');
+
+            for (let col = 0; col < 7; col++) {
+              const td = document.createElement('td');
+              td.className = 'align-top';
+              td.style.height = '110px';
+
+              const cellIndex = row * 7 + col;
+
+              // Cells before month starts -> previous month numbers
+              if (cellIndex < startDow) {
+                const prevNum = prevMonthDays - (startDow - 1 - col);
+                td.innerHTML = `<div class="small text-muted">${prevNum}</div>`;
+                td.classList.add('bg-light', 'text-muted');
+              }
+              // Cells for current month
+              else if (day <= daysInMonth) {
                 const header = document.createElement('div');
                 header.className = 'small text-muted mb-1';
                 header.textContent = String(day);
@@ -193,19 +208,30 @@
 
                 day++;
               }
+              // Cells after month ends -> next month numbers
+              else {
+                td.innerHTML = `<div class="small text-muted">${nextMonthDay++}</div>`;
+                td.classList.add('bg-light', 'text-muted');
+              }
+
               tr.appendChild(td);
             }
+
             elCalBody.appendChild(tr);
-            if (day > daysInMonth) break;
+            if (day > daysInMonth && nextMonthDay > 7) break; // stop early if last row fully next month
           }
         }
 
         async function loadCalendar(){
           const r = await fetch(`/api/dashboard/calendar?year=${calYear}&month=${calMonth}`);
-          if(!r.ok) return;
+          if(!r.ok){
+            console.error('Calendar API failed', r.status, await r.text());
+            buildGrid({}); // still draw the grid so numbers show
+            return;
+          }
           const items = await r.json();
 
-          // Timezone-safe: API returns ISO strings; slice date part directly
+          // timezone-safe: use YYYY-MM-DD directly when possible
           const map = {};
           for (const ev of items){
             const key = (typeof ev.eventDate === 'string')
@@ -239,10 +265,10 @@
           loadStats();
           loadMoreAnnouncements();
           loadCalendar();
-          // optional: refresh cards periodically
-          setInterval(loadStats, 15000);
+          setInterval(loadStats, 15000); // optional refresh
         })();
     </script>
+
 }
 <style>
     /* --- Dashboard polish --- */

@@ -18,10 +18,15 @@ namespace CampusLearn.Controllers
 
             if (studentId == null)
             {
-                // if session expired or user not logged in
                 return RedirectToAction("Index", "LogIn");
             }
 
+            var studentName = _db.Students
+                .Where(s => s.StudentID == studentId)
+                .Select(s => s.FirstName + " " + s.LastName)
+                .FirstOrDefault();
+
+            ViewData["StudentName"] = studentName;
             ViewData["StudentId"] = studentId.Value;
             return View();
         }
