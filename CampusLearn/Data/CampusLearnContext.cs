@@ -559,6 +559,13 @@ namespace CampusLearn.Data
                 e.HasKey(x => x.Id);
                 e.Property(x => x.Id).HasColumnName("id");
             });
+
+            modelBuilder.Entity<CampusLearn.ViewModels.ModuleItemCountDto>().HasNoKey();
+            modelBuilder.Entity<CampusLearn.ViewModels.DashboardStatsDto>().HasNoKey();
+            modelBuilder.Entity<CampusLearn.ViewModels.AnnouncementItemDto>().HasNoKey();
+            modelBuilder.Entity<CampusLearn.ViewModels.CalendarEventDto>().HasNoKey();
+            modelBuilder.Entity<CampusLearn.ViewModels.StudentOptionDto>().HasNoKey();
+
         }
     }
 }
