@@ -43,5 +43,23 @@ namespace CampusLearn.Controllers
             HttpContext.Session.Clear(); 
             return RedirectToAction("Index", "LogIn"); 
         }
+
+        [HttpPost]
+        public IActionResult UpdateProfile(long studentID, string personalEmail, string phone)
+        {
+            var student = _context.Students.FirstOrDefault(s => s.StudentID == studentID);
+            if (student == null)
+                return NotFound();
+
+            student.PersonalEmail = personalEmail;
+            student.Phone = phone;
+
+            _context.SaveChanges();
+
+            TempData["Success"] = "Profile updated successfully!";
+            return RedirectToAction("Index", new { id = studentID });
+        }
+
     }
 }
+
